@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Switch Configurator v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e14;--panel:#0f1520;--border:#1e2d42;--accent:#00c8ff;--accent2:#00ff99;--warn:#ffb300;--danger:#ff4444;--text:#c8d8e8;--muted:#4a6070;--code-bg:#060a0f;--hpe-green:#01a982;--purple:#b47eff;--cisco:#1ba0d7;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.03)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrapper{position:relative;z-index:1;}
+header{background:linear-gradient(135deg,#0d1a2a 0%,#091420 100%);border-bottom:2px solid var(--accent);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;box-shadow:0 0 30px rgba(0,200,255,.15);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-brand{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;letter-spacing:-1px;}
+.logo-brand.hpe{color:var(--hpe-green);}
+.logo-brand.cisco{color:var(--cisco);}
+.logo-div{width:2px;height:28px;background:var(--border);}
+.logo-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+.header-badge{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.main{display:grid;grid-template-columns:460px 1fr;gap:0;min-height:calc(100vh - 60px);}
+.left-panel{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 60px);position:sticky;top:0;}
+.panel-section{border-bottom:1px solid var(--border);padding:16px 20px;}
+.section-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-group{margin-bottom:11px;}
+label.lbl{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+input[type="text"],input[type="number"],select,textarea{width:100%;background:var(--code-bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 9px;border-radius:3px;outline:none;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,200,255,.1);}
+select option{background:#0f1520;}
+.toggle-group{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.tgl{padding:7px 5px;background:var(--code-bg);border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;border-radius:3px;cursor:pointer;text-align:center;transition:all .2s;text-transform:uppercase;letter-spacing:1px;}
+.tgl:hover{border-color:var(--accent);color:var(--accent);}
+.tgl.on{background:rgba(0,200,255,.1);border-color:var(--accent);color:var(--accent);}
+.tgl.on-green{background:rgba(0,255,153,.1);border-color:var(--accent2);color:var(--accent2);}
+.tgl.on-purple{background:rgba(180,126,255,.1);border-color:var(--purple);color:var(--purple);}
+.tgl.on-warn{background:rgba(255,179,0,.1);border-color:var(--warn);color:var(--warn);}
+.cbx-group{display:flex;flex-direction:column;gap:6px;}
+.cbx-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 6px;border:1px solid transparent;border-radius:3px;transition:all .2s;}
+.cbx-item:hover{border-color:var(--border);background:rgba(255,255,255,.02);}
+.cbx-item input{display:none;}
+.cbx-box{width:13px;height:13px;border:1px solid var(--muted);border-radius:2px;background:var(--code-bg);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--accent2);transition:all .2s;flex-shrink:0;}
+.cbx-item input:checked+.cbx-box{border-color:var(--accent2);background:rgba(0,255,153,.15);}
+.cbx-txt{font-size:12px;font-weight:600;}
+.cbx-desc{font-size:10px;color:var(--muted);margin-top:1px;}
+.hint{font-size:10px;color:var(--muted);margin-top:3px;font-family:'Share Tech Mono',monospace;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.sub-section{background:rgba(0,200,255,.02);border:1px solid rgba(30,45,66,.9);border-radius:4px;padding:10px 11px;margin-top:8px;}
+.sub-title{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;}
+.btn-sm{padding:4px 8px;font-size:10px;background:var(--code-bg);border:1px solid var(--border);color:var(--muted);border-radius:2px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s;}
+.btn-sm:hover{border-color:var(--accent2);color:var(--accent2);}
+.btn-del{color:var(--danger);border-color:transparent;}
+.btn-del:hover{border-color:var(--danger);color:var(--danger);}
+/* SWITCH VISUAL */
+.sw-visual{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px;}
+.sw-body{background:linear-gradient(180deg,#1a2030 0%,#141a25 100%);border:1px solid #2a3545;border-radius:4px;padding:10px 8px;}
+.sw-model{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:7px;text-align:center;}
+.ports-row{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-bottom:5px;}
+.port{border-radius:2px;border:1px solid #2a3545;background:#0d1520;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+.port.sz24{width:17px;height:14px;font-size:6px;}
+.port.sz48{width:13px;height:12px;font-size:5px;}
+.port.st-access{border-color:var(--accent2);background:rgba(0,255,153,.1);}
+.port.st-trunk{border-color:var(--accent);background:rgba(0,200,255,.08);}
+.port.st-hybrid{border-color:var(--purple);background:rgba(180,126,255,.1);}
+.port.st-voice{outline:1px solid var(--warn);outline-offset:1px;}
+.port.st-poe{box-shadow:0 0 4px rgba(255,179,0,.4);}
+.port.st-irf{border-color:var(--hpe-green);background:rgba(1,169,130,.12);}
+.port:hover{transform:scale(1.25);z-index:10;}
+.sfp-row{display:flex;gap:4px;margin-top:5px;justify-content:center;}
+.sfp-port{width:26px;height:15px;background:#0a0f18;border:1px solid #1e2d42;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.sfp-port.active{border-color:var(--accent);background:rgba(0,200,255,.1);color:var(--accent);}
+.sfp-port.irf{border-color:var(--hpe-green);background:rgba(1,169,130,.12);color:var(--hpe-green);}
+/* VLAN TABLE */
+.vlan-tbl{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:11px;}
+.vlan-tbl th{text-align:left;padding:4px 5px;color:var(--muted);border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:1px;}
+.vlan-tbl td{padding:3px 3px;}
+.vlan-tbl tr{border-bottom:1px solid rgba(30,45,66,.5);}
+/* PORT RULES TABLE */
+.prule-tbl{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:11px;margin-top:6px;}
+.prule-tbl th{text-align:left;padding:4px 5px;color:var(--muted);border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:1px;}
+.prule-tbl td{padding:3px 3px;}
+.prule-tbl tr.rule-row{border-bottom:1px solid rgba(30,45,66,.4);}
+.prule-tbl select,.prule-tbl input{padding:3px 5px;font-size:11px;}
+/* OUI TABLE */
+.oui-tbl{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:11px;margin-top:6px;}
+.oui-tbl th{text-align:left;padding:4px 5px;color:var(--muted);border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;}
+.oui-tbl td{padding:3px 3px;}
+.oui-tbl tr{border-bottom:1px solid rgba(30,45,66,.4);}
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;overflow:hidden;}
+.config-toolbar{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:9px;}
+.config-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;flex:1;}
+.btn-gen{padding:9px 20px;background:linear-gradient(135deg,var(--accent) 0%,#007aaa 100%);border:none;color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;border-radius:3px;cursor:pointer;transition:all .2s;box-shadow:0 0 20px rgba(0,200,255,.3);}
+.btn-gen:hover{box-shadow:0 0 30px rgba(0,200,255,.5);transform:translateY(-1px);}
+.btn-copy,.btn-dl{padding:9px 13px;background:var(--code-bg);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;border-radius:3px;cursor:pointer;transition:all .2s;}
+.btn-copy:hover,.btn-copy.copied{border-color:var(--accent2);color:var(--accent2);}
+.btn-dl:hover{border-color:var(--hpe-green);color:var(--hpe-green);}
+.config-out{flex:1;background:var(--code-bg);font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.8;padding:20px 24px;overflow-y:auto;white-space:pre;color:#8ab0c8;border:none;outline:none;resize:none;tab-size:4;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;opacity:.3;padding:40px;text-align:center;}
+.empty-icon{font-size:46px;filter:grayscale(1);}
+.empty-text{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);line-height:2;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.config-out{animation:fadeIn .3s ease;}
+.slider-wrap{display:flex;align-items:center;gap:9px;}
+input[type="range"]{flex:1;accent-color:var(--accent);background:transparent;height:4px;cursor:pointer;}
+.slider-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent);min-width:44px;text-align:right;}
+.info-badges{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-family:'Share Tech Mono',monospace;font-size:10px;}
+.badge-g{background:rgba(0,255,153,.08);border:1px solid rgba(0,255,153,.2);color:var(--accent2);}
+.badge-b{background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.2);color:var(--accent);}
+.badge-p{background:rgba(180,126,255,.08);border:1px solid rgba(180,126,255,.2);color:var(--purple);}
+.badge-w{background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.2);color:var(--warn);}
+.badge-h{background:rgba(1,169,130,.08);border:1px solid rgba(1,169,130,.2);color:var(--hpe-green);}
+.port-sel-grid{display:flex;gap:2px;flex-wrap:wrap;margin-top:5px;}
+.psel{width:26px;height:22px;border-radius:2px;border:1px solid var(--border);background:var(--code-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;transition:all .15s;}
+.psel:hover{border-color:var(--accent);color:var(--accent);}
+.psel.sel{border-color:var(--accent2);background:rgba(0,255,153,.12);color:var(--accent2);}
+.psel.sfpsel{width:34px;border-color:var(--border);}
+.psel.sfpsel.sel{border-color:var(--accent);background:rgba(0,200,255,.1);color:var(--accent);}
+.irf-psel.sel{border-color:var(--hpe-green)!important;background:rgba(1,169,130,.12)!important;color:var(--hpe-green)!important;}
+.port-rules-wrap{margin-top:8px;}
+.add-rule-btn{width:100%;margin-top:7px;padding:5px;font-size:10px;background:var(--code-bg);border:1px solid var(--border);color:var(--muted);border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s;text-align:center;}
+.add-rule-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height:70px;resize:vertical;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <div class="logo">
+    <span class="logo-brand hpe" id="hdr-brand">HPE</span>
+    <div class="logo-div"></div>
+    <div>
+      <div class="logo-title">Switch Configurator</div>
+      <div class="logo-sub" id="hdr-sub">FlexFabric · Comware 7 · CLI Generator v3</div>
+    </div>
+  </div>
+  <div class="header-badge">
+    <div class="status-dot"></div>
+    <span id="hdr-badge">HPE 5140 · 24G PoE+ · 4x SFP+</span>
+  </div>
+</header>
+
+<div class="main">
+<div class="left-panel">
+
+<!-- ═══ CHOIX DU SWITCH ═══ -->
+<div class="panel-section">
+  <div class="section-label">Modèle de switch</div>
+  <div class="form-group">
+    <label class="lbl">Constructeur / Modèle</label>
+    <select id="sw_model" onchange="onModelChange()">
+      <option value="hpe5140">HPE FlexFabric 5140 EI</option>
+      <option value="hpe3600">HPE V1910 / 3600 SI/EI</option>
+      <option value="cisco9200">Cisco Catalyst 9200</option>
+      <option value="cisco9300">Cisco Catalyst 9300</option>
+    </select>
+  </div>
+  <div class="two-col">
+    <div class="form-group">
+      <label class="lbl">Nombre de ports</label>
+      <select id="sw_ports" onchange="onPortsChange()">
+        <option value="24">24 ports</option>
+        <option value="48">48 ports</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="lbl">SFP+ uplinks</label>
+      <select id="sw_sfp" onchange="onPortsChange()">
+        <option value="0">Aucun</option>
+        <option value="4" selected>4x SFP+</option>
+        <option value="2">2x SFP+</option>
+        <option value="8">8x SFP+</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="lbl">Options hardware</label>
+    <div class="toggle-group">
+      <div class="tgl on-green" id="hw_poe_avail" onclick="toggleHw(this,'poe')">PoE+ disponible</div>
+      <div class="tgl on" id="hw_stack_avail" onclick="toggleHw(this,'stack')">Stackable</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SYSTÈME ═══ -->
+<div class="panel-section">
+  <div class="section-label">Informations système</div>
+  <div class="two-col">
+    <div class="form-group"><label class="lbl">Hostname</label><input type="text" id="hostname" value="SW-CORE-01"></div>
+    <div class="form-group"><label class="lbl">Domain name</label><input type="text" id="domain_name" value="corp.lan"></div>
+  </div>
+  <div class="form-group"><label class="lbl">Description</label><input type="text" id="sys_desc" value="Core Switch"></div>
+  <div class="form-group">
+    <label class="lbl">IP de gestion</label>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center;">
+      <input type="text" id="mgmt_ip" value="192.168.1.1">
+      <span style="font-family:'Share Tech Mono',monospace;color:var(--muted);font-size:12px;">/</span>
+      <input type="text" id="mgmt_mask" value="255.255.255.0">
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="form-group"><label class="lbl">VLAN gestion</label><input type="number" id="mgmt_vlan" value="1" min="1" max="4094"></div>
+    <div class="form-group"><label class="lbl">Gateway</label><input type="text" id="gateway" value="192.168.1.254"></div>
+  </div>
+  <!-- MOTD BANNER -->
+  <div class="form-group">
+    <label class="lbl">Bannière MOTD</label>
+    <textarea class="motd-area" id="motd_text" placeholder="Accès réservé au personnel autorisé.&#10;Toute connexion est enregistrée."></textarea>
+    <div class="hint">Affiché à chaque connexion</div>
+  </div>
+</div>
+
+<!-- ═══ MOT DE PASSE / POLITIQUE ═══ -->
+<div class="panel-section">
+  <div class="section-label">Sécurité & politique de mots de passe</div>
+  <div class="two-col">
+    <div class="form-group"><label class="lbl">Enable password</label><input type="text" id="enable_pass" value="Admin@1234!"></div>
+    <div class="form-group"><label class="lbl">User SSH local</label><input type="text" id="ssh_user" value="admin"></div>
+  </div>
+  <div class="form-group"><label class="lbl">Password SSH local</label><input type="text" id="ssh_pass" value="Admin@1234!"></div>
+  <div class="form-group">
+    <label class="lbl">Protocoles d'accès</label>
+    <div class="toggle-group">
+      <div class="tgl on" data-acc="ssh" onclick="toggleAcc(this)">SSH</div>
+      <div class="tgl" data-acc="telnet" onclick="toggleAcc(this)">Telnet</div>
+      <div class="tgl on" data-acc="web" onclick="toggleAcc(this)">Web UI</div>
+      <div class="tgl" data-acc="snmp" onclick="toggleAcc(this)">SNMP</div>
+    </div>
+  </div>
+  <div id="snmp-opt" style="display:none;" class="form-group"><label class="lbl">Communauté SNMP</label><input type="text" id="snmp_community" value="public"></div>
+  <div class="sub-section">
+    <div class="sub-title">Politique de mots de passe</div>
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Longueur min.</label><input type="number" id="pw_min_len" value="8" min="1" max="64"></div>
+      <div class="form-group"><label class="lbl">Expiration (jours)</label><input type="number" id="pw_aging" value="90" min="0" max="999"><div class="hint">0 = désactivé</div></div>
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Historique (nb)</label><input type="number" id="pw_history" value="5" min="0" max="99"><div class="hint">0 = désactivé</div></div>
+      <div class="form-group"><label class="lbl">Échecs avant verrou</label><input type="number" id="pw_lockout" value="5" min="0" max="99"><div class="hint">0 = désactivé</div></div>
+    </div>
+    <div class="form-group"><label class="lbl">Durée verrou (min)</label><input type="number" id="pw_lockout_time" value="10" min="1" max="1440"></div>
+    <div class="cbx-group" style="gap:5px;margin-top:4px;">
+      <label class="cbx-item"><input type="checkbox" id="pw_complex" checked><span class="cbx-box">✓</span><div><div class="cbx-txt">Complexité requise</div><div class="cbx-desc">Majuscule, chiffre, caractère spécial</div></div></label>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RADIUS ═══ -->
+<div class="panel-section">
+  <div class="section-label">RADIUS</div>
+  <div class="form-group">
+    <label class="lbl">RADIUS</label>
+    <div class="toggle-group">
+      <div class="tgl on-purple" id="radius_on" onclick="toggleBlock('radius','radius_on','on-purple')">Activé</div>
+      <div class="tgl" id="radius_off" onclick="toggleBlockOff('radius','radius_on','on-purple')">Désactivé</div>
+    </div>
+  </div>
+  <div id="radius-body">
+    <div class="form-group"><label class="lbl">Nom du schéma</label><input type="text" id="radius_scheme" value="RADIUS-CORP"></div>
+    <div class="form-group"><label class="lbl">Serveur Auth primaire — IP · Port</label><div style="display:grid;grid-template-columns:1fr 68px;gap:5px;"><input type="text" id="radius_p1" value="192.168.1.200"><input type="number" id="radius_p1port" value="1812"></div></div>
+    <div class="form-group"><label class="lbl">Serveur Auth secondaire — IP · Port</label><div style="display:grid;grid-template-columns:1fr 68px;gap:5px;"><input type="text" id="radius_p2" value="" placeholder="Optionnel"><input type="number" id="radius_p2port" value="1812"></div></div>
+    <div class="form-group"><label class="lbl">Serveur Accounting — IP · Port</label><div style="display:grid;grid-template-columns:1fr 68px;gap:5px;"><input type="text" id="radius_acct" value="192.168.1.200"><input type="number" id="radius_acctport" value="1813"></div></div>
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Shared Secret</label><input type="text" id="radius_secret" value="SecretRAD!"></div>
+      <div class="form-group"><label class="lbl">Timeout (s)</label><input type="number" id="radius_timeout" value="5" min="1" max="60"></div>
+    </div>
+    <div class="form-group"><label class="lbl">Domaine AAA</label><input type="text" id="radius_domain" value="corp.lan"></div>
+    <div class="sub-section">
+      <div class="sub-title">MAC Authentication (MAB)</div>
+      <div class="form-group">
+        <div class="toggle-group">
+          <div class="tgl" id="mac_on" onclick="toggleBlock('mac','mac_on','on-purple')">Activé</div>
+          <div class="tgl on" id="mac_off" onclick="toggleBlockOff('mac','mac_on','on-purple')">Désactivé</div>
+        </div>
+      </div>
+      <div id="mac-body" style="display:none;">
+        <div class="form-group"><label class="lbl">Format username MAC</label><select id="mac_fmt"><option value="with-hyphen">xx-xx-xx-xx-xx-xx</option><option value="without-hyphen">xxxxxxxxxxxx</option></select></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STACK / IRF ═══ -->
+<div class="panel-section" id="stack-section">
+  <div class="section-label">Stack <span id="stack-proto-label">(IRF)</span></div>
+  <div class="form-group">
+    <label class="lbl">Stack activé</label>
+    <div class="toggle-group">
+      <div class="tgl on-green" id="stack_on" onclick="toggleBlock('stack','stack_on','on-green')">Activé</div>
+      <div class="tgl" id="stack_off" onclick="toggleBlockOff('stack','stack_on','on-green')">Désactivé</div>
+    </div>
+  </div>
+  <div id="stack-body">
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Member ID (ce switch)</label><select id="irf_member"><option value="1">1 (Master)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div>
+      <div class="form-group"><label class="lbl">Nb membres total</label><input type="number" id="irf_total" value="2" min="2" max="8"><div class="hint">2 à 8 switches</div></div>
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Priorité (32=master)</label><input type="number" id="irf_priority" value="32" min="1" max="32"></div>
+      <div class="form-group"><label class="lbl">Description membre</label><input type="text" id="irf_desc" value="MEMBER1"></div>
+    </div>
+    <div class="form-group">
+      <label class="lbl">Ports SFP+ dédiés stack</label>
+      <div class="port-sel-grid" id="irf-sfp-sel"></div>
+      <div class="hint">Ces ports seront exclus des uplinks</div>
+    </div>
+    <div class="form-group"><label class="lbl">Mode liaison</label><select id="irf_link_mode"><option value="normal">Normal (chaîne)</option><option value="ring">Ring (anneau)</option></select></div>
+    <div class="sub-section">
+      <div class="sub-title">MAD — Multi-Active Detection</div>
+      <div class="form-group">
+        <div class="toggle-group">
+          <div class="tgl on" id="mad_on" onclick="toggleBlock('mad','mad_on','on')">Activé</div>
+          <div class="tgl" id="mad_off" onclick="toggleBlockOff('mad','mad_on','on')">Désactivé</div>
+        </div>
+      </div>
+      <div id="mad-body">
+        <div class="two-col">
+          <div class="form-group"><label class="lbl">Type MAD</label><select id="mad_type"><option value="bfd">BFD MAD</option><option value="arp" selected>ARP MAD</option><option value="lacp">LACP MAD</option></select></div>
+          <div class="form-group"><label class="lbl">IP MAD</label><input type="text" id="mad_ip" value="192.168.1.2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VLANs ═══ -->
+<div class="panel-section">
+  <div class="section-label">VLANs</div>
+  <table class="vlan-tbl">
+    <thead><tr><th>ID</th><th>Nom</th><th>Type</th><th></th></tr></thead>
+    <tbody id="vlan-body">
+      <tr><td><input type="number" value="1" min="1" max="4094" style="width:48px"></td><td><input type="text" value="MGMT"></td><td><select style="padding:3px 4px;font-size:11px;"><option>MGMT</option><option>DATA</option><option>TOIP</option><option>SURETE</option><option>WIFI</option></select></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td></tr>
+      <tr><td><input type="number" value="10" min="1" max="4094" style="width:48px"></td><td><input type="text" value="DATA"></td><td><select style="padding:3px 4px;font-size:11px;"><option>MGMT</option><option selected>DATA</option><option>TOIP</option><option>SURETE</option><option>WIFI</option></select></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td></tr>
+      <tr><td><input type="number" value="20" min="1" max="4094" style="width:48px"></td><td><input type="text" value="TOIP"></td><td><select style="padding:3px 4px;font-size:11px;"><option>MGMT</option><option>DATA</option><option selected>TOIP</option><option>SURETE</option><option>WIFI</option></select></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td></tr>
+    </tbody>
+  </table>
+  <button class="add-rule-btn" onclick="addVlan()">+ Ajouter VLAN</button>
+</div>
+
+<!-- ═══ RÈGLES DE PORTS ═══ -->
+<div class="panel-section">
+  <div class="section-label">Règles de ports</div>
+  <!-- Switch visual -->
+  <div class="sw-visual">
+    <div class="sw-model" id="sw-model-label">HPE FlexFabric 5140 EI — 24G PoE+ 4SFP+</div>
+    <div class="sw-body">
+      <div class="ports-row" id="portRow"></div>
+      <div class="sfp-row" id="sfpRow"></div>
+    </div>
+  </div>
+  <div class="info-badges">
+    <span class="badge badge-g">■ Access</span>
+    <span class="badge badge-p">■ Hybrid</span>
+    <span class="badge badge-b">■ Trunk</span>
+    <span class="badge badge-w">◌ Voice</span>
+    <span class="badge badge-h">■ Stack</span>
+    <span class="badge" style="color:var(--warn);background:rgba(255,179,0,.06);border:1px solid rgba(255,179,0,.2);">★ PoE</span>
+  </div>
+  <div class="port-rules-wrap">
+    <table class="prule-tbl">
+      <thead><tr><th>Ports</th><th>Mode</th><th>VLAN(s)</th><th>PoE</th><th></th></tr></thead>
+      <tbody id="rules-body"></tbody>
+    </table>
+    <button class="add-rule-btn" id="add-rule-btn" onclick="addRule()">+ Ajouter règle de ports</button>
+  </div>
+</div>
+
+<!-- ═══ HYBRID ═══ -->
+<div class="panel-section">
+  <div class="section-label">Ports VLAN Hybrid</div>
+  <div class="form-group">
+    <div class="toggle-group">
+      <div class="tgl on-purple" id="hybrid_on" onclick="toggleBlock('hybrid','hybrid_on','on-purple')">Activé</div>
+      <div class="tgl" id="hybrid_off" onclick="toggleBlockOff('hybrid','hybrid_on','on-purple')">Désactivé</div>
+    </div>
+  </div>
+  <div id="hybrid-body">
+    <div class="hint" style="margin-bottom:8px;color:var(--purple);">Tagged (VoIP) + Untagged (Data) sur même port — IP Phone + PC</div>
+    <table class="prule-tbl">
+      <thead><tr><th>Ports</th><th>PVID</th><th>Tagged</th><th>Untagged</th><th></th></tr></thead>
+      <tbody id="hybrid-rules-body"></tbody>
+    </table>
+    <button class="add-rule-btn" onclick="addHybridRule()">+ Ajouter règle Hybrid</button>
+  </div>
+</div>
+
+<!-- ═══ VOICE VLAN ═══ -->
+<div class="panel-section">
+  <div class="section-label">Voice VLAN</div>
+  <div class="form-group">
+    <div class="toggle-group">
+      <div class="tgl on-green" id="voice_on" onclick="toggleBlock('voice','voice_on','on-green')">Activé</div>
+      <div class="tgl" id="voice_off" onclick="toggleBlockOff('voice','voice_on','on-green')">Désactivé</div>
+    </div>
+  </div>
+  <div id="voice-body">
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">ID Voice VLAN</label><input type="number" id="voice_vlan_id" value="20" min="1" max="4094"></div>
+      <div class="form-group"><label class="lbl">Mode détection</label><select id="voice_mode"><option value="auto" selected>Auto (OUI)</option><option value="manual">Manuel</option></select></div>
+    </div>
+    <div class="form-group">
+      <label class="lbl">Ports Voice VLAN</label>
+      <div class="port-sel-grid" id="voice-port-sel"></div>
+    </div>
+    <div class="form-group">
+      <label class="lbl">OUIs téléphones IP</label>
+      <table class="oui-tbl">
+        <thead><tr><th>#</th><th>OUI (xx-xx-xx)</th><th>Description</th><th></th></tr></thead>
+        <tbody id="oui-body">
+          <tr><td style="color:var(--muted);font-size:10px;">1</td><td><input type="text" value="0001-6400-0000" style="width:100%;padding:3px 5px;font-size:11px;"></td><td><input type="text" value="Cisco-Phone" style="padding:3px 5px;font-size:11px;"></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td></tr>
+          <tr><td style="color:var(--muted);font-size:10px;">2</td><td><input type="text" value="6416-7f00-0000" style="width:100%;padding:3px 5px;font-size:11px;"></td><td><input type="text" value="Poly-Phone" style="padding:3px 5px;font-size:11px;"></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td></tr>
+        </tbody>
+      </table>
+      <button class="add-rule-btn" onclick="addOui()">+ Ajouter OUI</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PoE ═══ -->
+<div class="panel-section" id="poe-section">
+  <div class="section-label">Power over Ethernet (PoE+)</div>
+  <div class="hint" style="margin-bottom:9px;">Le PoE est configuré port par port dans les règles de ports ci-dessus. Paramètres globaux :</div>
+  <div class="form-group">
+    <label class="lbl">Budget PoE global (W)</label>
+    <div class="slider-wrap"><input type="range" id="poe_budget" min="30" max="740" value="370" step="10" oninput="document.getElementById('poe_bval').textContent=this.value+'W'"><span class="slider-val" id="poe_bval">370W</span></div>
+  </div>
+  <div class="two-col">
+    <div class="form-group"><label class="lbl">Priorité défaut</label><select id="poe_prio"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option></select></div>
+    <div class="form-group"><label class="lbl">Mode défaut</label><select id="poe_mode"><option value="auto" selected>Auto (af/at)</option><option value="802.3af">Force 802.3af</option><option value="802.3at">Force 802.3at</option></select></div>
+  </div>
+</div>
+
+<!-- ═══ STP ═══ -->
+<div class="panel-section">
+  <div class="section-label">Spanning Tree</div>
+  <div class="form-group">
+    <div class="toggle-group">
+      <div class="tgl on-green" id="stp_on" onclick="toggleBlock('stp','stp_on','on-green')">Activé</div>
+      <div class="tgl" id="stp_off" onclick="toggleBlockOff('stp','stp_on','on-green')">Désactivé</div>
+    </div>
+  </div>
+  <div id="stp-body">
+    <div class="form-group"><label class="lbl">Mode STP</label><select id="stp_mode"><option value="rstp" selected>RSTP</option><option value="stp">STP classique</option><option value="mstp">MSTP</option></select></div>
+    <div class="two-col">
+      <div class="form-group"><label class="lbl">Priorité bridge</label><select id="stp_priority"><option value="0">0</option><option value="4096" selected>4096</option><option value="8192">8192</option><option value="16384">16384</option><option value="32768">32768</option></select></div>
+      <div class="form-group"><label class="lbl">Edge port (PortFast)</label>
+        <div class="toggle-group"><div class="tgl on-green" id="portfast_on" onclick="toggleBlock('portfast','portfast_on','on-green')">Activé</div><div class="tgl" id="portfast_off" onclick="toggleBlockOff('portfast','portfast_on','on-green')">Désactivé</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FONCTIONNALITÉS ═══ -->
+<div class="panel-section">
+  <div class="section-label">Fonctionnalités</div>
+  <div class="cbx-group">
+    <label class="cbx-item"><input type="checkbox" id="feat_lldp" checked><span class="cbx-box">✓</span><div><div class="cbx-txt">LLDP</div><div class="cbx-desc">Découverte topologie</div></div></label>
+    <label class="cbx-item"><input type="checkbox" id="feat_dhcp_snoop"><span class="cbx-box"></span><div><div class="cbx-txt">DHCP Snooping</div><div class="cbx-desc">Protection faux serveurs DHCP</div></div></label>
+    <label class="cbx-item"><input type="checkbox" id="feat_dai"><span class="cbx-box"></span><div><div class="cbx-txt">Dynamic ARP Inspection</div><div class="cbx-desc">Anti ARP spoofing</div></div></label>
+    <label class="cbx-item"><input type="checkbox" id="feat_ipsg"><span class="cbx-box"></span><div><div class="cbx-txt">IP Source Guard</div><div class="cbx-desc">Validation IP/MAC</div></div></label>
+    <label class="cbx-item"><input type="checkbox" id="feat_ntp" checked><span class="cbx-box">✓</span><div><div class="cbx-txt">NTP</div><div class="cbx-desc">Synchronisation horaire</div></div></label>
+    <label class="cbx-item"><input type="checkbox" id="feat_syslog" checked><span class="cbx-box">✓</span><div><div class="cbx-txt">Syslog</div><div class="cbx-desc">Journalisation distante</div></div></label>
+  </div>
+  <div id="ntp-opt" style="display:none;margin-top:9px;"><div class="form-group"><label class="lbl">Serveur NTP</label><input type="text" id="ntp_server" value="pool.ntp.org"></div></div>
+  <div id="syslog-opt" style="display:none;margin-top:9px;"><div class="form-group"><label class="lbl">Serveur Syslog</label><input type="text" id="syslog_server" value="192.168.1.100"></div></div>
+</div>
+
+<!-- ═══ UPLINKS SFP+ ═══ -->
+<div class="panel-section">
+  <div class="section-label">Uplinks SFP+</div>
+  <div class="form-group">
+    <label class="lbl">Ports SFP+ uplink actifs</label>
+    <div class="port-sel-grid" id="sfp-uplink-sel"></div>
+    <div class="hint">Ports réservés stack exclus auto.</div>
+  </div>
+  <div class="form-group"><label class="lbl">Mode uplink</label><select id="uplink_mode"><option value="trunk">Trunk (tous VLANs)</option><option value="trunk_sel">Trunk (VLANs sélectifs)</option><option value="access">Access</option></select></div>
+  <div class="form-group"><label class="lbl">VLANs trunk sélectifs</label><input type="text" id="uplink_vlans" value="1,10,20"><div class="hint">Utilisé si mode Trunk sélectif</div></div>
+  <div class="form-group"><label class="lbl">Description uplinks</label><input type="text" id="uplink_desc" value="UPLINK-CORE"></div>
+</div>
+
+</div><!-- END LEFT PANEL -->
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="config-toolbar">
+    <span class="config-title" id="cli-title">⬡ Configuration — Comware 7 CLI</span>
+    <button class="btn-dl" onclick="downloadConfig()">⬇ Télécharger</button>
+    <button class="btn-copy" id="copyBtn" onclick="copyConfig()">⎘ Copier</button>
+    <button class="btn-gen" onclick="generateConfig()">▶ Générer</button>
+  </div>
+  <div style="display:flex;flex-direction:column;flex:1;">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-text">Sélectionnez votre modèle, configurez les options<br>puis cliquez sur <strong>[ GÉNÉRER ]</strong> pour obtenir<br>la configuration CLI</div>
+    </div>
+    <textarea class="config-out" id="configOut" style="display:none;" readonly spellcheck="false"></textarea>
+  </div>
+</div>
+</div></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let swModel='hpe5140', swPorts=24, swSfp=4, swPoE=true, swStack=true;
+let portRules=[], hybridRules=[];
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const v=id=>$( id)?$(id).value.trim():'';
+const chk=id=>$(id)?$(id).checked:false;
+const tog=(id,cls)=>$(id)?$(id).classList.contains(cls):false;
+const isCisco=()=>swModel.startsWith('cisco');
+const isHpe=()=>swModel.startsWith('hpe');
+
+function toggleAcc(el){
+  el.classList.toggle('on');
+  $('snmp-opt').style.display=document.querySelector('[data-acc="snmp"]').classList.contains('on')?'block':'none';
+}
+function toggleBlock(bodyId,btnOnId,cls){
+  $(btnOnId).className='tgl '+cls;
+  const offId=btnOnId.replace('_on','_off');
+  $(offId).className='tgl';
+  $(bodyId+'-body').style.display='block';
+  updateVisual();
+}
+function toggleBlockOff(bodyId,btnOnId,cls){
+  $(btnOnId).className='tgl';
+  const offId=btnOnId.replace('_on','_off');
+  $(offId).className='tgl on';
+  $(bodyId+'-body').style.display='none';
+  updateVisual();
+}
+function toggleHw(el,type){
+  el.classList.toggle(type==='poe'?'on-green':'on');
+  if(type==='poe'){swPoE=el.classList.contains('on-green'); $('poe-section').style.display=swPoE?'block':'none';}
+  if(type==='stack'){swStack=el.classList.contains('on'); $('stack-section').style.display=swStack?'block':'none';}
+  updateVisual();
+}
+function delRow(btn){btn.closest('tr').remove();}
+
+// ══════════════════════════════════════════════════════════
+// MODEL / PORTS CHANGE
+// ══════════════════════════════════════════════════════════
+function onModelChange(){
+  swModel=v('sw_model');
+  const cisco=isCisco();
+  $('hdr-brand').textContent=cisco?'CISCO':'HPE';
+  $('hdr-brand').className='logo-brand '+(cisco?'cisco':'hpe');
+  $('hdr-sub').textContent=cisco?'IOS-XE · CLI Generator v3':'FlexFabric · Comware 7 · CLI Generator v3';
+  $('cli-title').textContent=cisco?'⬡ Configuration — IOS-XE CLI':'⬡ Configuration — Comware 7 CLI';
+  $('stack-proto-label').textContent=cisco?'(StackWise)':'(IRF)';
+  const models={'hpe5140':'HPE FlexFabric 5140 EI','hpe3600':'HPE V1910/3600','cisco9200':'Cisco Catalyst 9200','cisco9300':'Cisco Catalyst 9300'};
+  onPortsChange();
+}
+function onPortsChange(){
+  swPorts=parseInt(v('sw_ports'));
+  swSfp=parseInt(v('sw_sfp'));
+  const models={'hpe5140':'HPE FlexFabric 5140 EI','hpe3600':'HPE V1910/3600','cisco9200':'Cisco Catalyst 9200','cisco9300':'Cisco Catalyst 9300'};
+  const sfpStr=swSfp>0?` ${swSfp}x SFP+`:'';
+  $('sw-model-label').textContent=`${models[swModel]} — ${swPorts}G PoE+${sfpStr}`;
+  $('hdr-badge').textContent=`${models[swModel]} · ${swPorts} ports · ${swSfp}x SFP+`;
+  buildPortGrid();
+  buildSfpSelectors();
+  buildVoicePortSelector();
+  updateVisual();
+  updateRulesSelectors();
+}
+
+// ══════════════════════════════════════════════════════════
+// PORT VISUAL
+// ══════════════════════════════════════════════════════════
+function buildPortGrid(){
+  const row=$('portRow');
+  row.innerHTML='';
+  const sz=swPorts>=48?'sz48':'sz24';
+  for(let i=1;i<=swPorts;i++){
+    const p=document.createElement('div');
+    p.className=`port ${sz}`;
+    p.id=`vis-port-${i}`;
+    p.title=`Port ${i}`;
+    p.textContent=i;
+    row.appendChild(p);
+  }
+  const sfpRow=$('sfpRow');
+  sfpRow.innerHTML='';
+  for(let i=1;i<=swSfp;i++){
+    const p=document.createElement('div');
+    p.className='sfp-port';
+    p.id=`vis-sfp-${i}`;
+    p.textContent=`S${i}`;
+    sfpRow.appendChild(p);
+  }
+}
+function updateVisual(){
+  // reset all ports
+  for(let i=1;i<=swPorts;i++){
+    const p=$(` vis-port-${i}`)||document.getElementById(`vis-port-${i}`);
+    if(p) p.className=`port ${swPorts>=48?'sz48':'sz24'}`;
+  }
+  for(let i=1;i<=swSfp;i++){
+    const p=document.getElementById(`vis-sfp-${i}`);
+    if(p) p.className='sfp-port';
+  }
+  // stack ports
+  const stackOn=tog('stack_on','on-green');
+  const irfPorts=getStackPorts();
+  irfPorts.forEach(n=>{
+    const p=document.getElementById(`vis-sfp-${n}`);
+    if(p) p.className='sfp-port irf';
+  });
+  // port rules
+  portRules.forEach(rule=>{
+    getPorts(rule.ports).forEach(n=>{
+      const p=document.getElementById(`vis-port-${n}`);
+      if(!p) return;
+      const sz=swPorts>=48?'sz48':'sz24';
+      let cls=`port ${sz} `;
+      if(rule.mode==='access') cls+='st-access';
+      else if(rule.mode==='trunk') cls+='st-trunk';
+      if(rule.poe) cls+=' st-poe';
+      p.className=cls.trim();
+    });
+  });
+  // hybrid
+  if(tog('hybrid_on','on-purple')){
+    hybridRules.forEach(rule=>{
+      getPorts(rule.ports).forEach(n=>{
+        const p=document.getElementById(`vis-port-${n}`);
+        if(!p) return;
+        const sz=swPorts>=48?'sz48':'sz24';
+        p.className=`port ${sz} st-hybrid`;
+      });
+    });
+  }
+  // voice
+  if(tog('voice_on','on-green')){
+    document.querySelectorAll('#voice-port-sel .psel.sel').forEach(btn=>{
+      const n=parseInt(btn.dataset.port);
+      const p=document.getElementById(`vis-port-${n}`);
+      if(p) p.classList.add('st-voice');
+    });
+  }
+  // sfp uplinks
+  document.querySelectorAll('#sfp-uplink-sel .psel.sel').forEach(btn=>{
+    const n=parseInt(btn.dataset.port);
+    if(!irfPorts.includes(n)){
+      const p=document.getElementById(`vis-sfp-${n}`);
+      if(p) p.className='sfp-port active';
+    }
+  });
+}
+function getPorts(str){
+  const res=[];
+  if(!str) return res;
+  str.split(',').forEach(part=>{
+    part=part.trim();
+    if(part.includes('-')){
+      const [a,b]=part.split('-').map(Number);
+      for(let i=a;i<=b&&i<=swPorts;i++) res.push(i);
+    } else {
+      const n=parseInt(part);
+      if(!isNaN(n)&&n>=1&&n<=swPorts) res.push(n);
+    }
+  });
+  return [...new Set(res)];
+}
+
+// ══════════════════════════════════════════════════════════
+// SFP SELECTORS
+// ══════════════════════════════════════════════════════════
+function buildSfpSelectors(){
+  // IRF port selector
+  const irfSel=$('irf-sfp-sel');
+  irfSel.innerHTML='';
+  for(let i=1;i<=swSfp;i++){
+    const b=document.createElement('div');
+    b.className='psel sfpsel irf-psel'+(i===swSfp?' sel':'');
+    b.dataset.port=i;
+    b.textContent=`SFP${i}`;
+    b.onclick=()=>{b.classList.toggle('sel');updateVisual();};
+    irfSel.appendChild(b);
+  }
+  // Uplink selector
+  const uplSel=$('sfp-uplink-sel');
+  uplSel.innerHTML='';
+  for(let i=1;i<=swSfp;i++){
+    const b=document.createElement('div');
+    b.className='psel sfpsel'+(i<=2?' sel':'');
+    b.dataset.port=i;
+    b.textContent=`SFP${i}`;
+    b.onclick=()=>{b.classList.toggle('sel');updateVisual();};
+    uplSel.appendChild(b);
+  }
+}
+function buildVoicePortSelector(){
+  const sel=$('voice-port-sel');
+  sel.innerHTML='';
+  for(let i=1;i<=swPorts;i++){
+    const b=document.createElement('div');
+    b.className='psel sz24'+(i<=swPorts?' sel':'');
+    b.dataset.port=i;
+    b.textContent=i;
+    b.onclick=()=>{b.classList.toggle('sel');updateVisual();};
+    sel.appendChild(b);
+  }
+}
+function getStackPorts(){
+  return Array.from(document.querySelectorAll('#irf-sfp-sel .psel.sel')).map(b=>parseInt(b.dataset.port));
+}
+function getUplinkPorts(){
+  const irf=getStackPorts();
+  return Array.from(document.querySelectorAll('#sfp-uplink-sel .psel.sel')).map(b=>parseInt(b.dataset.port)).filter(n=>!irf.includes(n));
+}
+function getVoicePorts(){
+  return Array.from(document.querySelectorAll('#voice-port-sel .psel.sel')).map(b=>parseInt(b.dataset.port));
+}
+
+// ══════════════════════════════════════════════════════════
+// PORT RULES
+// ══════════════════════════════════════════════════════════
+function addRule(){
+  const tbody=$('rules-body');
+  const idx=tbody.rows.length;
+  const tr=document.createElement('tr');
+  tr.className='rule-row';
+  tr.dataset.idx=idx;
+  const vlanOpts=getVlanOptions();
+  const poeAvail=swPoE?`<td><input type="checkbox" checked style="width:auto;accent-color:var(--warn);cursor:pointer;" onchange="syncRules()"></td>`:`<td style="color:var(--muted);font-size:10px;text-align:center;">—</td>`;
+  tr.innerHTML=`
+    <td><input type="text" value="1-24" placeholder="ex: 1-10,15" style="width:90px;" oninput="syncRules();updateVisual()"></td>
+    <td><select style="padding:3px 4px;font-size:11px;" onchange="syncRules()"><option value="access" selected>Access</option><option value="trunk">Trunk</option></select></td>
+    <td><input type="text" value="10" placeholder="VLAN(s)" style="width:72px;" oninput="syncRules()"></td>
+    ${poeAvail}
+    <td><button class="btn-sm btn-del" onclick="delRule(this)">✕</button></td>`;
+  tbody.appendChild(tr);
+  syncRules();
+}
+function delRule(btn){btn.closest('tr').remove();syncRules();updateVisual();}
+function syncRules(){
+  portRules=[];
+  document.querySelectorAll('#rules-body tr').forEach(tr=>{
+    const inputs=tr.querySelectorAll('input');
+    const sel=tr.querySelector('select');
+    const poeCb=tr.querySelector('input[type="checkbox"]');
+    portRules.push({ports:inputs[0]?inputs[0].value:'',mode:sel?sel.value:'access',vlans:inputs[1]?inputs[1].value:'',poe:poeCb?poeCb.checked:false});
+  });
+  updateVisual();
+}
+function updateRulesSelectors(){
+  // Rebuild selectors in existing rows to reflect new port count
+  syncRules();
+}
+function addHybridRule(){
+  const tbody=$('hybrid-rules-body');
+  const tr=document.createElement('tr');
+  tr.className='rule-row';
+  tr.innerHTML=`
+    <td><input type="text" value="19-22" placeholder="ex: 19-22,25" style="width:80px;"></td>
+    <td><input type="number" value="10" min="1" max="4094" style="width:52px;"></td>
+    <td><input type="text" value="10,20" placeholder="tagged" style="width:62px;"></td>
+    <td><input type="text" value="10" placeholder="untagged" style="width:62px;"></td>
+    <td><button class="btn-sm btn-del" onclick="delHybridRule(this)">✕</button></td>`;
+  tbody.appendChild(tr);
+  syncHybridRules();
+}
+function delHybridRule(btn){btn.closest('tr').remove();syncHybridRules();}
+function syncHybridRules(){
+  hybridRules=[];
+  document.querySelectorAll('#hybrid-rules-body tr').forEach(tr=>{
+    const inputs=tr.querySelectorAll('input');
+    hybridRules.push({ports:inputs[0]?inputs[0].value:'',pvid:inputs[1]?inputs[1].value:'1',tagged:inputs[2]?inputs[2].value:'',untagged:inputs[3]?inputs[3].value:''});
+  });
+  updateVisual();
+}
+// ══════════════════════════════════════════════════════════
+// VLANs
+// ══════════════════════════════════════════════════════════
+let vlanCount=3;
+function addVlan(){
+  vlanCount++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input type="number" value="${vlanCount*10}" min="1" max="4094" style="width:48px"></td><td><input type="text" value="VLAN${vlanCount}"></td><td><select style="padding:3px 4px;font-size:11px;"><option>MGMT</option><option selected>DATA</option><option>TOIP</option><option>SURETE</option><option>WIFI</option></select></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td>`;
+  $('vlan-body').appendChild(tr);
+}
+function getVlans(){
+  return Array.from(document.querySelectorAll('#vlan-body tr')).map(tr=>{
+    const i=tr.querySelectorAll('input');const s=tr.querySelector('select');
+    return{id:i[0]?i[0].value:'',name:i[1]?i[1].value:'',type:s?s.value:'DATA'};
+  });
+}
+function getVlanOptions(){return'';}
+function addOui(){
+  const tbody=$('oui-body');
+  const idx=tbody.rows.length+1;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="color:var(--muted);font-size:10px;">${idx}</td><td><input type="text" value="" placeholder="xxxx-xxxx-xxxx" style="width:100%;padding:3px 5px;font-size:11px;"></td><td><input type="text" value="" placeholder="Description" style="padding:3px 5px;font-size:11px;"></td><td><button class="btn-sm btn-del" onclick="delRow(this)">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function getOuis(){
+  return Array.from(document.querySelectorAll('#oui-body tr')).map(tr=>{
+    const i=tr.querySelectorAll('input');
+    return{mac:i[0]?i[0].value.trim():'',desc:i[1]?i[1].value.trim():''};
+  }).filter(o=>o.mac);
+}
+
+// ══════════════════════════════════════════════════════════
+// CHECKBOXES
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll('.cbx-item input').forEach(cb=>{
+  cb.addEventListener('change',function(){
+    this.nextElementSibling.textContent=this.checked?'✓':'';
+    if(this.id==='feat_ntp') $('ntp-opt').style.display=this.checked?'block':'none';
+    if(this.id==='feat_syslog') $('syslog-opt').style.display=this.checked?'block':'none';
+  });
+  if(cb.checked){cb.nextElementSibling.textContent='✓';
+    if(cb.id==='feat_ntp') $('ntp-opt').style.display='block';
+    if(cb.id==='feat_syslog') $('syslog-opt').style.display='block';
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+function init(){
+  onModelChange();
+  // Add default rules
+  addRule(); // will add 1-24 access vlan 10
+  // Fix first rule defaults
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('#rules-body tr');
+    if(rows[0]){const i=rows[0].querySelectorAll('input');if(i[0])i[0].value=`1-${swPorts}`;}
+    syncRules();
+    addHybridRule();
+    syncHybridRules();
+    updateVisual();
+    setTimeout(generateConfig,200);
+  },50);
+}
+
+// ══════════════════════════════════════════════════════════
+// CONFIG GENERATOR
+// ══════════════════════════════════════════════════════════
+function portRange(start,end,memberPrefix=''){
+  // Build interface range string for Comware or IOS
+  if(isCisco()) return `${memberPrefix}GigabitEthernet1/0/${start}${start!==end?` - GigabitEthernet1/0/${end}`:''}`;
+  return `GigabitEthernet1/0/${start}${start!==end?` to GigabitEthernet1/0/${end}`:''}`;
+}
+function ifaceGe(n,member=1){
+  if(isCisco()) return `interface GigabitEthernet${member}/0/${n}`;
+  return `interface GigabitEthernet${member}/0/${n}`;
+}
+function ifaceTe(n,member=1){
+  if(isCisco()) return `interface TenGigabitEthernet${member}/0/${n}`;
+  return `interface Ten-GigabitEthernet${member}/0/${n}`;
+}
+
+function generateConfig(){
+  syncRules(); syncHybridRules();
+  const cisco=isCisco();
+  const hostname=v('hostname')||'SW-CORE-01';
+  const sysDesc=v('sys_desc'); const domainName=v('domain_name');
+  const mgmtIp=v('mgmt_ip'); const mgmtMask=v('mgmt_mask');
+  const mgmtVlan=v('mgmt_vlan'); const gateway=v('gateway');
+  const enablePass=v('enable_pass'); const sshUser=v('ssh_user'); const sshPass=v('ssh_pass');
+  const motd=v('motd_text');
+  const pwMinLen=v('pw_min_len'); const pwAging=parseInt(v('pw_aging'));
+  const pwHistory=parseInt(v('pw_history')); const pwLockout=parseInt(v('pw_lockout'));
+  const pwLockoutTime=v('pw_lockout_time'); const pwComplex=chk('pw_complex');
+  const sshOn=document.querySelector('[data-acc="ssh"]').classList.contains('on');
+  const telnetOn=document.querySelector('[data-acc="telnet"]').classList.contains('on');
+  const webOn=document.querySelector('[data-acc="web"]').classList.contains('on');
+  const snmpOn=document.querySelector('[data-acc="snmp"]').classList.contains('on');
+  const snmpCom=v('snmp_community');
+  const radiusOn=tog('radius_on','on-purple');
+  const radiusScheme=v('radius_scheme'); const rp1=v('radius_p1'); const rp1port=v('radius_p1port');
+  const rp2=v('radius_p2'); const rp2port=v('radius_p2port');
+  const racct=v('radius_acct'); const racctport=v('radius_acctport');
+  const rsecret=v('radius_secret'); const rtimeout=v('radius_timeout'); const rdomain=v('radius_domain');
+  const macOn=tog('mac_on','on-purple'); const macFmt=v('mac_fmt');
+  const stackOn=tog('stack_on','on-green');
+  const irfMember=v('irf_member'); const irfTotal=parseInt(v('irf_total')||2);
+  const irfPrio=v('irf_priority'); const irfDesc=v('irf_desc'); const irfLinkMode=v('irf_link_mode');
+  const madOn=tog('mad_on','on'); const madType=v('mad_type'); const madIp=v('mad_ip');
+  const irfPorts=getStackPorts();
+  const vlans=getVlans();
+  const hybridOn=tog('hybrid_on','on-purple');
+  const voiceOn=tog('voice_on','on-green');
+  const voiceId=v('voice_vlan_id'); const voiceMode=v('voice_mode');
+  const voicePorts=getVoicePorts();
+  const ouis=getOuis();
+  const poeBudget=v('poe_budget'); const poePrio=v('poe_prio'); const poeMode=v('poe_mode');
+  const stpOn=tog('stp_on','on-green'); const stpMode=v('stp_mode'); const stpPrio=v('stp_priority');
+  const portfastOn=tog('portfast_on','on-green');
+  const lldpOn=chk('feat_lldp'); const dhcpSnoopOn=chk('feat_dhcp_snoop');
+  const daiOn=chk('feat_dai'); const ipsgOn=chk('feat_ipsg');
+  const ntpOn=chk('feat_ntp'); const ntpServer=v('ntp_server');
+  const syslogOn=chk('feat_syslog'); const syslogServer=v('syslog_server');
+  const uplinkPorts=getUplinkPorts(); const uplinkMode=v('uplink_mode');
+  const uplinkVlans=v('uplink_vlans'); const uplinkDesc=v('uplink_desc');
+  const ts=new Date().toLocaleString('fr-FR');
+
+  const c=[];
+  const ln=t=>c.push(t===undefined?'':t);
+  const cm=t=>c.push(`# ${t}`);
+  const cmc=t=>c.push(`! ${t}`);
+  const sep=t=>c.push(cisco?`! ── [ ${t} ] ${'─'.repeat(Math.max(0,55-t.length))}`:`# ── [ ${t} ] ${'─'.repeat(Math.max(0,55-t.length))}`);
+  const com=cisco?cmc:cm;
+
+  // ─────── HEADER ───────
+  com(''); com('================================================================');
+  com(`  Switch Configurator v3 — ${cisco?'IOS-XE':'Comware 7'}`);
+  com(`  Modèle    : ${$('sw-model-label').textContent}`);
+  com(`  Généré le : ${ts}`); com(`  Appareil  : ${hostname}`);
+  com('================================================================'); com(''); ln();
+
+  // ─────── STACK (HPE IRF) — AVANT TOUT ───────
+  if(stackOn && !cisco){
+    sep('IRF STACK — Configurer avant tout autre paramètre');
+    com('IMPORTANT: Sauvegarder et redémarrer après configuration IRF');
+    com('');
+    ln(`irf member ${irfMember} renumber ${irfMember}`);
+    ln(`irf member ${irfMember} priority ${irfPrio}`);
+    ln(`irf member ${irfMember} description ${irfDesc}`);
+    com('');
+    irfPorts.forEach((sfpNum,idx)=>{
+      ln(`irf-port ${irfMember}/${idx+1}`);
+      ln(` port group interface Ten-GigabitEthernet${irfMember}/0/${sfpNum}`);
+      com('');
+    });
+    ln('irf-port-configuration active');
+    if(irfLinkMode==='ring') ln('irf link-delay 1000');
+    com('');
+    if(madOn){
+      sep('MAD — Multi-Active Detection');
+      if(madType==='bfd'){ln('mad bfd enable');ln(`mad ip address ${madIp} 255.255.255.0 member ${irfMember}`);}
+      else if(madType==='arp'){ln('mad arp enable');ln(`mad ip address ${madIp} 255.255.255.0 member ${irfMember}`);}
+      else{ln('mad lacp enable');}
+      com('');
+    }
+    com(`Membres stack total: ${irfTotal} — Member IDs: ${Array.from({length:irfTotal},(_,i)=>i+1).join(', ')}`);
+    com('Exécuter sur chaque membre: irf save  puis  reboot'); com(''); ln();
+  }
+
+  // ─────── CISCO STACK ───────
+  if(stackOn && cisco){
+    sep('STACKWISE');
+    ln(`switch ${irfMember} priority ${irfPrio}`);
+    ln(`switch ${irfMember} renumber ${irfMember}`);
+    com(`Membres stack total: ${irfTotal}`);
+    com(''); ln();
+  }
+
+  // ─────── SYSTÈME ───────
+  sep('SYSTÈME');
+  if(cisco){
+    ln(`hostname ${hostname}`);
+    if(domainName) ln(`ip domain-name ${domainName}`);
+    ln(`service timestamps log datetime msec`);
+    ln(`service timestamps debug datetime msec`);
+    if(!telnetOn) ln(`no service telnet`);
+    if(sshOn){ ln(`ip ssh version 2`); ln(`crypto key generate rsa modulus 2048`); }
+    com('');
+  } else {
+    ln(`sysname ${hostname}`);
+    if(domainName) ln(`ip domain-name ${domainName}`);
+    if(sysDesc) ln(`system-description ${sysDesc}`);
+    if(!telnetOn) ln(`undo telnet server enable`); else ln(`telnet server enable`);
+    if(sshOn){ ln(`ssh server enable`); ln(`public-key local create rsa`); }
+    if(!webOn){ ln(`undo ip http enable`); ln(`undo ip https enable`); } else { ln(`ip http enable`); ln(`ip https enable`); }
+    com('');
+  }
+  ln();
+
+  // ─────── MOTD ───────
+  if(motd){
+    sep('BANNIÈRE MOTD');
+    if(cisco){
+      ln(`banner motd ^`);
+      motd.split('\n').forEach(line=>ln(line));
+      ln(`^`);
+    } else {
+      ln(`header login %`);
+      motd.split('\n').forEach(line=>ln(line));
+      ln(`%`);
+    }
+    com(''); ln();
+  }
+
+  // ─────── POLITIQUE MOTS DE PASSE ───────
+  sep('POLITIQUE DE MOTS DE PASSE');
+  if(cisco){
+    if(pwMinLen) ln(`security passwords min-length ${pwMinLen}`);
+    if(pwAging>0) ln(`password policy minimum-length ${pwMinLen}`);
+    if(pwComplex){ ln(`aaa authentication password-constraint`); ln(` password-policy`); ln(`  complexity enable`); }
+    if(pwHistory>0) ln(`password history-count ${pwHistory}`);
+    if(pwAging>0) ln(`password-policy expiry-warning ${pwAging}`);
+    if(pwLockout>0){ ln(`aaa local authentication attempts max-fail ${pwLockout}`); ln(`aaa local authentication attempts allowed ${pwLockout}`); }
+  } else {
+    if(pwMinLen) ln(`password-control length ${pwMinLen}`);
+    if(pwAging>0) ln(`password-control aging ${pwAging}`);
+    if(pwHistory>0) ln(`password-control history ${pwHistory}`);
+    if(pwLockout>0){ ln(`password-control login-attempt ${pwLockout} exceed lock-time ${pwLockoutTime}`); }
+    if(pwComplex){ ln(`password-control complexity-check enable`); ln(`password-control composition type-number 3 type-length 1`); }
+    ln(`password-control enable`);
+  }
+  com(''); ln();
+
+  // ─────── AUTHENTIFICATION LOCALE ───────
+  sep('AUTHENTIFICATION LOCALE');
+  if(cisco){
+    ln(`enable secret ${enablePass}`);
+    com('');
+    ln(`username ${sshUser} privilege 15 secret ${sshPass}`);
+    com('');
+    if(sshOn){ ln(`line vty 0 15`); ln(` login local`); ln(` transport input ssh`); com(''); }
+    if(telnetOn){ ln(`line vty 0 4`); ln(` login local`); ln(` transport input telnet`); com(''); }
+    ln(`line con 0`); ln(` login local`); com('');
+  } else {
+    ln(`super password level 3 simple ${enablePass}`); com('');
+    ln(`local-user ${sshUser} class manage`);
+    ln(` password simple ${sshPass}`);
+    ln(` service-type ssh${telnetOn?' telnet':''}${webOn?' web':''}`);
+    ln(` authorization-attribute user-role network-admin`); com('');
+    if(sshOn){ ln(`line vty 0 4`); ln(` authentication-mode scheme`); ln(` protocol inbound ssh`); com(''); }
+  }
+  ln();
+
+  // ─────── RADIUS ───────
+  if(radiusOn){
+    sep('RADIUS — AAA');
+    if(cisco){
+      ln(`aaa new-model`);
+      ln(`radius server PRIMARY`);
+      ln(` address ipv4 ${rp1} auth-port ${rp1port} acct-port ${racctport}`);
+      ln(` key ${rsecret}`);
+      ln(` timeout ${rtimeout}`);
+      com('');
+      if(rp2){ ln(`radius server SECONDARY`); ln(` address ipv4 ${rp2} auth-port ${rp2port} acct-port 1813`); ln(` key ${rsecret}`); com(''); }
+      ln(`aaa group server radius RADIUS-GRP`);
+      ln(` server name PRIMARY`);
+      if(rp2) ln(` server name SECONDARY`);
+      com('');
+      ln(`aaa authentication login default group RADIUS-GRP local`);
+      ln(`aaa authorization exec default group RADIUS-GRP local`);
+      ln(`aaa accounting exec default start-stop group RADIUS-GRP`);
+      com('');
+      if(macOn){ sep('MAC AUTHENTICATION (MAB)'); ln(`aaa authentication dot1x default group RADIUS-GRP`); ln(`dot1x system-auth-control`); com(''); }
+    } else {
+      ln(`radius scheme ${radiusScheme}`);
+      ln(` primary authentication ${rp1} ${rp1port}`);
+      if(rp2) ln(` secondary authentication ${rp2} ${rp2port}`);
+      ln(` primary accounting ${racct} ${racctport}`);
+      if(rp2) ln(` secondary accounting ${rp2} 1813`);
+      ln(` key authentication simple ${rsecret}`);
+      ln(` key accounting simple ${rsecret}`);
+      ln(` server-type standard`);
+      ln(` timer response-timeout ${rtimeout}`);
+      ln(` retry 3`);
+      ln(` user-name-format without-domain`); com('');
+      ln(`domain ${rdomain}`);
+      ln(` authentication default radius-scheme ${radiusScheme} local`);
+      ln(` authorization default radius-scheme ${radiusScheme} local`);
+      ln(` accounting default radius-scheme ${radiusScheme} none`);
+      ln(`domain default enable ${rdomain}`); com('');
+      if(macOn){ sep('MAC AUTHENTICATION (MAB)'); ln(`mac-authentication domain ${rdomain}`); ln(`mac-authentication user-name-format mac-address ${macFmt}`); com(''); }
+    }
+    ln();
+  }
+
+  // ─────── VLANs ───────
+  sep('VLANs');
+  if(cisco){
+    vlans.forEach(vl=>{ ln(`vlan ${vl.id}`); ln(` name ${vl.name.toUpperCase()}_${vl.type}`); com(''); });
+  } else {
+    vlans.forEach(vl=>{ ln(`vlan ${vl.id}`); ln(` name ${vl.name.toUpperCase()}`); com(''); });
+  }
+  ln();
+
+  // ─────── INTERFACE DE GESTION ───────
+  sep('INTERFACE DE GESTION');
+  if(cisco){
+    ln(`interface Vlan${mgmtVlan}`);
+    ln(` description MGMT`);
+    ln(` ip address ${mgmtIp} ${mgmtMask}`);
+    ln(` no shutdown`); com('');
+    ln(`ip default-gateway ${gateway}`); com('');
+  } else {
+    ln(`interface Vlan-interface${mgmtVlan}`);
+    ln(` description MGMT`);
+    ln(` ip address ${mgmtIp} ${mgmtMask}`); com('');
+    ln(`ip route-static 0.0.0.0 0.0.0.0 ${gateway}`); com('');
+  }
+  ln();
+
+  // ─────── RÈGLES DE PORTS ───────
+  portRules.forEach((rule,idx)=>{
+    const ports=getPorts(rule.ports);
+    if(!ports.length) return;
+    sep(`RÈGLE ${idx+1} — ${rule.mode.toUpperCase()} ports ${rule.ports}`);
+    ports.forEach(n=>{
+      const member=stackOn?parseInt(irfMember):1;
+      if(cisco){
+        ln(`interface GigabitEthernet${member}/0/${n}`);
+        ln(` description ${rule.mode.toUpperCase()}-GE${member}/0/${n}`);
+        if(rule.mode==='access'){
+          ln(` switchport mode access`);
+          ln(` switchport access vlan ${rule.vlans}`);
+        } else {
+          ln(` switchport mode trunk`);
+          ln(` switchport trunk allowed vlan ${rule.vlans}`);
+          ln(` switchport trunk native vlan ${mgmtVlan}`);
+        }
+        if(swPoE&&rule.poe) ln(` power inline auto`);
+        if(stpOn&&portfastOn&&rule.mode==='access') ln(` spanning-tree portfast`);
+        if(lldpOn){ ln(` lldp transmit`); ln(` lldp receive`); }
+        if(voiceOn&&voicePorts.includes(n)) ln(` switchport voice vlan ${voiceId}`);
+        if(macOn&&radiusOn&&rule.mode==='access'){ ln(` authentication port-control auto`); ln(` mab`); }
+        ln(` no shutdown`); com('');
+      } else {
+        ln(`interface GigabitEthernet${member}/0/${n}`);
+        ln(` description ${rule.mode.toUpperCase()}-GE${member}/0/${n}`);
+        if(rule.mode==='access'){
+          ln(` port link-type access`);
+          ln(` port access vlan ${rule.vlans}`);
+        } else {
+          ln(` port link-type trunk`);
+          ln(` port trunk permit vlan ${rule.vlans}`);
+          ln(` port trunk pvid vlan ${mgmtVlan}`);
+        }
+        if(swPoE&&rule.poe){ ln(` poe enable`); if(poeMode==='802.3af') ln(` poe max-power 15400`); else if(poeMode==='802.3at') ln(` poe max-power 30000`); ln(` poe priority ${poePrio}`); }
+        if(stpOn&&portfastOn&&rule.mode==='access') ln(` stp edged-port`);
+        if(lldpOn) ln(` lldp enable`);
+        if(voiceOn&&voicePorts.includes(n)){ ln(` voice-vlan ${voiceId} enable`); if(voiceMode==='auto') ln(` voice-vlan mode auto`); }
+        if(macOn&&radiusOn&&rule.mode==='access') ln(` mac-authentication`);
+        ln(` undo shutdown`); com('');
+      }
+    });
+    ln();
+  });
+
+  // ─────── HYBRID ───────
+  if(hybridOn && !cisco){
+    hybridRules.forEach((rule,idx)=>{
+      const ports=getPorts(rule.ports);
+      if(!ports.length) return;
+      sep(`HYBRID règle ${idx+1} — ports ${rule.ports}`);
+      cm('Mode Hybrid: tagged (VoIP/Data) + untagged sur même port');
+      const member=stackOn?parseInt(irfMember):1;
+      ports.forEach(n=>{
+        ln(`interface GigabitEthernet${member}/0/${n}`);
+        ln(` description HYBRID-GE${member}/0/${n}`);
+        ln(` port link-type hybrid`);
+        ln(` port hybrid pvid vlan ${rule.pvid}`);
+        ln(` port hybrid vlan ${rule.tagged} tagged`);
+        ln(` port hybrid vlan ${rule.untagged} untagged`);
+        if(voiceOn&&voicePorts.includes(n)){ ln(` voice-vlan ${voiceId} enable`); if(voiceMode==='auto') ln(` voice-vlan mode auto`); }
+        if(swPoE){ ln(` poe enable`); ln(` poe priority ${poePrio}`); }
+        if(stpOn&&portfastOn) ln(` stp edged-port`);
+        if(lldpOn) ln(` lldp enable`);
+        ln(` undo shutdown`); com('');
+      });
+      ln();
+    });
+  }
+
+  // ─────── UPLINKS SFP+ ───────
+  if(swSfp>0){
+    sep('UPLINKS SFP+');
+    const member=stackOn?parseInt(irfMember):1;
+    for(let i=1;i<=swSfp;i++){
+      const isIrf=stackOn&&irfPorts.includes(i);
+      const isActive=uplinkPorts.includes(i);
+      if(cisco){
+        ln(`interface TenGigabitEthernet${member}/0/${i}`);
+        if(isIrf){ ln(` description STACK-LINK-${i}`); com(''); }
+        else if(!isActive){ ln(` description UNUSED`); ln(` shutdown`); com(''); }
+        else{
+          ln(` description ${uplinkDesc}-${i}`);
+          if(uplinkMode==='trunk'||uplinkMode==='trunk_sel'){ ln(` switchport mode trunk`); ln(uplinkMode==='trunk'?` switchport trunk allowed vlan all`:` switchport trunk allowed vlan ${uplinkVlans}`); ln(` switchport trunk native vlan ${mgmtVlan}`); }
+          else{ ln(` switchport mode access`); ln(` switchport access vlan ${v('access_vlan')||mgmtVlan}`); }
+          if(lldpOn){ ln(` lldp transmit`); ln(` lldp receive`); }
+          ln(` no shutdown`); com('');
+        }
+      } else {
+        ln(`interface Ten-GigabitEthernet${member}/0/${i}`);
+        if(isIrf){ ln(` description IRF-LINK-${i}`); com(''); }
+        else if(!isActive){ ln(` description UNUSED`); ln(` shutdown`); com(''); }
+        else{
+          ln(` description ${uplinkDesc}-${i}`);
+          if(uplinkMode==='trunk'||uplinkMode==='trunk_sel'){ ln(` port link-type trunk`); ln(uplinkMode==='trunk'?` port trunk permit vlan all`:` port trunk permit vlan ${uplinkVlans}`); ln(` port trunk pvid vlan ${mgmtVlan}`); }
+          else{ ln(` port link-type access`); ln(` port access vlan ${mgmtVlan}`); }
+          if(lldpOn) ln(` lldp enable`);
+          ln(` undo shutdown`); com('');
+        }
+      }
+    }
+    ln();
+  }
+
+  // ─────── VOICE VLAN GLOBAL ───────
+  if(voiceOn){
+    sep('VOICE VLAN — Global');
+    if(cisco){
+      ouis.forEach(o=>ln(`voice-vlan mac-address ${o.mac} mask ffff-ff00-0000 description ${o.desc||'Phone'}`));
+    } else {
+      ln(`voice-vlan ${voiceId} enable`);
+      ouis.forEach(o=>ln(`voice-vlan mac-address ${o.mac} mask ffff-ff00-0000 description ${o.desc||'Phone'}`));
+    }
+    com(''); ln();
+  }
+
+  // ─────── PoE GLOBAL ───────
+  if(swPoE){
+    sep('PoE GLOBAL');
+    if(cisco){ ln(`power inline consumption default ${Math.floor(poeBudget*1000)}`); }
+    else{ ln(`poe enable pse 1`); ln(`poe max-power ${poeBudget*1000}`); }
+    com(''); ln();
+  }
+
+  // ─────── STP ───────
+  if(stpOn){
+    sep('SPANNING TREE');
+    if(cisco){
+      const modeMap={'rstp':'rapid-pvst','stp':'pvst','mstp':'mst'};
+      ln(`spanning-tree mode ${modeMap[stpMode]||'rapid-pvst'}`);
+      vlans.forEach(vl=>ln(`spanning-tree vlan ${vl.id} priority ${stpPrio}`));
+    } else {
+      ln(`stp global enable`);
+      ln(`stp mode ${stpMode}`);
+      ln(`stp instance 0 priority ${stpPrio}`);
+    }
+    com(''); ln();
+  }
+
+  // ─────── DHCP SNOOPING ───────
+  if(dhcpSnoopOn){
+    sep('DHCP SNOOPING');
+    if(cisco){
+      ln(`ip dhcp snooping`);
+      vlans.forEach(vl=>ln(`ip dhcp snooping vlan ${vl.id}`));
+      ln(`no ip dhcp snooping information option`); com('');
+      uplinkPorts.forEach(n=>{
+        const member=stackOn?parseInt(irfMember):1;
+        ln(`interface TenGigabitEthernet${member}/0/${n}`);
+        ln(` ip dhcp snooping trust`); com('');
+      });
+    } else {
+      ln(`dhcp snooping enable`);
+      ln(`dhcp snooping binding database filename flash:/dhcp_snoop.db`); com('');
+      uplinkPorts.forEach(n=>{
+        const member=stackOn?parseInt(irfMember):1;
+        ln(`interface Ten-GigabitEthernet${member}/0/${n}`);
+        ln(` dhcp snooping trust`); com('');
+      });
+    }
+    ln();
+  }
+
+  // ─────── DAI ───────
+  if(daiOn){
+    sep('DYNAMIC ARP INSPECTION');
+    if(cisco){
+      vlans.forEach(vl=>ln(`ip arp inspection vlan ${vl.id}`)); com('');
+      uplinkPorts.forEach(n=>{
+        const member=stackOn?parseInt(irfMember):1;
+        ln(`interface TenGigabitEthernet${member}/0/${n}`);
+        ln(` ip arp inspection trust`); com('');
+      });
+    } else {
+      vlans.forEach(vl=>ln(`arp detection vlan ${vl.id}`)); com('');
+      uplinkPorts.forEach(n=>{
+        const member=stackOn?parseInt(irfMember):1;
+        ln(`interface Ten-GigabitEthernet${member}/0/${n}`);
+        ln(` arp detection trust`); com('');
+      });
+    }
+    ln();
+  }
+
+  // ─────── IP SOURCE GUARD ───────
+  if(ipsgOn && !cisco){
+    sep('IP SOURCE GUARD');
+    portRules.filter(r=>r.mode==='access').forEach(r=>{
+      getPorts(r.ports).forEach(n=>{
+        const member=stackOn?parseInt(irfMember):1;
+        ln(`interface GigabitEthernet${member}/0/${n}`);
+        ln(` ip source binding recording`); com('');
+      });
+    });
+    ln();
+  }
+
+  // ─────── LLDP ───────
+  if(lldpOn){
+    sep('LLDP');
+    if(cisco){ ln(`lldp run`); if(voiceOn) ln(`lldp tlv-select med-tlv`); }
+    else{ ln(`lldp global enable`); ln(`lldp timer tx-interval 30`); if(voiceOn) ln(`lldp tlv-enable med-tlv voice-vlan`); }
+    com(''); ln();
+  }
+
+  // ─────── NTP ───────
+  if(ntpOn){
+    sep('NTP');
+    if(cisco){ ln(`ntp server ${ntpServer}`); ln(`clock timezone CET +1 0`); }
+    else{ ln(`ntp-service enable`); ln(`ntp-service unicast-server ${ntpServer} version 2`); ln(`clock timezone Paris add 01:00:00`); }
+    com(''); ln();
+  }
+
+  // ─────── SYSLOG ───────
+  if(syslogOn){
+    sep('SYSLOG');
+    if(cisco){ ln(`logging host ${syslogServer}`); ln(`logging trap informational`); }
+    else{ ln(`info-center enable`); ln(`info-center loghost ${syslogServer}`); }
+    com(''); ln();
+  }
+
+  // ─────── SNMP ───────
+  if(snmpOn){
+    sep('SNMP v2c');
+    if(cisco){ ln(`snmp-server community ${snmpCom} RO`); ln(`snmp-server enable traps`); }
+    else{ ln(`snmp-agent`); ln(`snmp-agent community read ${snmpCom}`); ln(`snmp-agent sys-info version v2c`); ln(`snmp-agent trap enable`); }
+    com(''); ln();
+  }
+
+  // ─────── SAVE ───────
+  sep('SAUVEGARDE');
+  if(cisco){ ln(`end`); ln(`write memory`); }
+  else{ ln(`save force`); }
+  com(''); com('─── FIN DE CONFIGURATION ─────────────────────────────────────────');
+
+  const config=c.join('\n');
+  $('emptyState').style.display='none';
+  const out=$('configOut');
+  out.style.display='block'; out.value=config;
+  const btn=document.querySelector('.btn-gen');
+  btn.textContent='✓ Généré !'; btn.style.background='linear-gradient(135deg,var(--accent2) 0%,#00aa66 100%)';
+  setTimeout(()=>{ btn.textContent='▶ Générer'; btn.style.background=''; },2000);
+  updateVisual();
+}
+
+function copyConfig(){
+  const out=$('configOut'); if(!out.value) return;
+  navigator.clipboard.writeText(out.value).then(()=>{
+    const btn=$('copyBtn'); btn.textContent='✓ Copié !'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='⎘ Copier'; btn.classList.remove('copied'); },2000);
+  });
+}
+function downloadConfig(){
+  const out=$('configOut'); if(!out.value) generateConfig();
+  const hostname=$('hostname').value.trim()||'switch';
+  const blob=new Blob([out.value],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`${hostname}-config.txt`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
