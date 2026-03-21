@@ -131,6 +131,94 @@ input[type="range"]{flex:1;accent-color:var(--accent);background:transparent;hei
 .add-rule-btn{width:100%;margin-top:7px;padding:5px;font-size:10px;background:var(--code-bg);border:1px solid var(--border);color:var(--muted);border-radius:3px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s;text-align:center;}
 .add-rule-btn:hover{border-color:var(--accent2);color:var(--accent2);}
 textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height:70px;resize:vertical;}
+
+/* Desktop: override — always show everything */
+@media(min-width:901px){
+  .panel-section{display:block !important;}
+  .right-panel{display:flex !important;}
+  .mob-nav,.fab-gen{display:none !important;}
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE NAV TABS
+═══════════════════════════════════════════════ */
+.mob-nav{display:none;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.mob-nav::-webkit-scrollbar{display:none;}
+.mob-nav-inner{display:flex;min-width:max-content;}
+.mob-tab{padding:11px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;text-transform:uppercase;letter-spacing:1px;}
+.mob-tab:hover{color:var(--text);}
+.mob-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ═══════════════════════════════════════════════
+   FAB GENERATE BUTTON (mobile)
+═══════════════════════════════════════════════ */
+.fab-gen{display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:14px 20px;background:linear-gradient(135deg,var(--accent) 0%,#007aaa 100%);border:none;color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;text-transform:uppercase;border-radius:40px;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,255,.45);transition:all .2s;}
+.fab-gen:active{transform:scale(.95);}
+
+/* ═══════════════════════════════════════════════
+   TABLET — 900px to 1100px  (side-by-side but narrower)
+═══════════════════════════════════════════════ */
+@media(max-width:1100px){
+  .main{grid-template-columns:360px 1fr;}
+}
+
+/* ═══════════════════════════════════════════════
+   TABLET — ≤ 900px (stacked, tab navigation)
+═══════════════════════════════════════════════ */
+@media(max-width:900px){
+  .main{grid-template-columns:1fr;grid-template-rows:auto auto;min-height:auto;}
+  .left-panel{max-height:none;position:static;border-right:none;border-bottom:1px solid var(--border);}
+  .right-panel{min-height:60vh;}
+  .config-out{min-height:50vh;}
+  .mob-nav{display:block;}
+  /* Panel sections hidden by default on tablet/mobile, shown via tab */
+  .panel-section{display:none;}
+  .panel-section.tab-visible{display:block;}
+  /* Config panel always occupies right-panel, shown when tab=config */
+  .right-panel{display:none;}
+  .right-panel.tab-visible{display:flex;}
+  header .header-badge{display:none;}
+  .logo-sub{display:none;}
+  .fab-gen{display:block;}
+  /* config-toolbar compact */
+  .config-toolbar{flex-wrap:wrap;gap:7px;}
+  .config-title{font-size:12px;width:100%;order:-1;}
+  .btn-gen{display:none;}/* hidden — replaced by FAB */
+  .btn-copy,.btn-dl{flex:1;text-align:center;}
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE — ≤ 600px
+═══════════════════════════════════════════════ */
+@media(max-width:600px){
+  header{padding:0 14px;height:52px;}
+  .logo-brand{font-size:22px;}
+  .logo-title{font-size:13px;letter-spacing:1px;}
+  .panel-section{padding:14px 14px;}
+  .two-col{grid-template-columns:1fr;}
+  .three-col{grid-template-columns:1fr 1fr;}
+  /* Port visual adapts */
+  .port.sz24{width:15px;height:13px;font-size:5px;}
+  .port.sz48{width:11px;height:11px;font-size:0;}
+  /* Tables scroll horizontally */
+  .vlan-tbl,.prule-tbl,.oui-tbl{display:block;overflow-x:auto;white-space:nowrap;}
+  /* Buttons bigger touch targets */
+  .tgl{padding:10px 5px;font-size:10px;}
+  input[type="text"],input[type="number"],select,textarea{font-size:16px;padding:9px 10px;}/* prevent iOS zoom */
+  .psel{width:30px;height:26px;font-size:10px;}
+  .mob-tab{padding:10px 14px;font-size:10px;}
+  .fab-gen{bottom:16px;right:16px;padding:12px 18px;font-size:14px;}
+}
+
+/* ═══════════════════════════════════════════════
+   MOBILE — ≤ 380px (small phones)
+═══════════════════════════════════════════════ */
+@media(max-width:380px){
+  .logo-title{font-size:11px;}
+  .port.sz24{width:13px;height:12px;}
+  .port.sz48{width:10px;height:10px;}
+  .psel{width:26px;height:24px;}
+}
 </style>
 </head>
 <body>
@@ -150,11 +238,33 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
   </div>
 </header>
 
+<!-- MOBILE TAB NAV -->
+<nav class="mob-nav" id="mobNav">
+  <div class="mob-nav-inner">
+    <div class="mob-tab active" data-tab="0" onclick="switchTab(0)">⚙ Modèle</div>
+    <div class="mob-tab" data-tab="1" onclick="switchTab(1)">🖥 Système</div>
+    <div class="mob-tab" data-tab="2" onclick="switchTab(2)">🔒 Sécurité</div>
+    <div class="mob-tab" data-tab="3" onclick="switchTab(3)">📡 RADIUS</div>
+    <div class="mob-tab" data-tab="4" onclick="switchTab(4)">🔗 Stack</div>
+    <div class="mob-tab" data-tab="5" onclick="switchTab(5)">🏷 VLANs</div>
+    <div class="mob-tab" data-tab="6" onclick="switchTab(6)">🔌 Ports</div>
+    <div class="mob-tab" data-tab="7" onclick="switchTab(7)">⚡ Hybrid</div>
+    <div class="mob-tab" data-tab="8" onclick="switchTab(8)">🎙 Voice</div>
+    <div class="mob-tab" data-tab="9" onclick="switchTab(9)">⚡ PoE</div>
+    <div class="mob-tab" data-tab="10" onclick="switchTab(10)">🌐 STP/Feats</div>
+    <div class="mob-tab" data-tab="11" onclick="switchTab(11)">🔼 Uplinks</div>
+    <div class="mob-tab" data-tab="config" onclick="switchTab('config')">📋 Config</div>
+  </div>
+</nav>
+
+<!-- FAB GENERATE BUTTON (mobile only) -->
+<button class="fab-gen" onclick="generateConfig();switchTab('config')">▶ Générer</button>
+
 <div class="main">
 <div class="left-panel">
 
 <!-- ═══ CHOIX DU SWITCH ═══ -->
-<div class="panel-section">
+<div class="panel-section tab-visible" data-tab="0">
   <div class="section-label">Modèle de switch</div>
   <div class="form-group">
     <label class="lbl">Constructeur / Modèle</label>
@@ -193,7 +303,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ SYSTÈME ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="1">
   <div class="section-label">Informations système</div>
   <div class="two-col">
     <div class="form-group"><label class="lbl">Hostname</label><input type="text" id="hostname" value="SW-CORE-01"></div>
@@ -221,7 +331,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ MOT DE PASSE / POLITIQUE ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="2">
   <div class="section-label">Sécurité & politique de mots de passe</div>
   <div class="two-col">
     <div class="form-group"><label class="lbl">Enable password</label><input type="text" id="enable_pass" value="Admin@1234!"></div>
@@ -256,7 +366,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ RADIUS ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="3">
   <div class="section-label">RADIUS</div>
   <div class="form-group">
     <label class="lbl">RADIUS</label>
@@ -291,7 +401,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ STACK / IRF ═══ -->
-<div class="panel-section" id="stack-section">
+<div class="panel-section" id="stack-section" data-tab="4">
   <div class="section-label">Stack <span id="stack-proto-label">(IRF)</span></div>
   <div class="form-group">
     <label class="lbl">Stack activé</label>
@@ -334,7 +444,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ VLANs ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="5">
   <div class="section-label">VLANs</div>
   <table class="vlan-tbl">
     <thead><tr><th>ID</th><th>Nom</th><th>Type</th><th></th></tr></thead>
@@ -348,7 +458,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ RÈGLES DE PORTS ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="6">
   <div class="section-label">Règles de ports</div>
   <!-- Switch visual -->
   <div class="sw-visual">
@@ -376,7 +486,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ HYBRID ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="7">
   <div class="section-label">Ports VLAN Hybrid</div>
   <div class="form-group">
     <div class="toggle-group">
@@ -395,7 +505,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ VOICE VLAN ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="8">
   <div class="section-label">Voice VLAN</div>
   <div class="form-group">
     <div class="toggle-group">
@@ -427,7 +537,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ PoE ═══ -->
-<div class="panel-section" id="poe-section">
+<div class="panel-section" id="poe-section" data-tab="9">
   <div class="section-label">Power over Ethernet (PoE+)</div>
   <div class="hint" style="margin-bottom:9px;">Le PoE est configuré port par port dans les règles de ports ci-dessus. Paramètres globaux :</div>
   <div class="form-group">
@@ -441,7 +551,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ STP ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="10">
   <div class="section-label">Spanning Tree</div>
   <div class="form-group">
     <div class="toggle-group">
@@ -461,7 +571,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ FONCTIONNALITÉS ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="10">
   <div class="section-label">Fonctionnalités</div>
   <div class="cbx-group">
     <label class="cbx-item"><input type="checkbox" id="feat_lldp" checked><span class="cbx-box">✓</span><div><div class="cbx-txt">LLDP</div><div class="cbx-desc">Découverte topologie</div></div></label>
@@ -476,7 +586,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div>
 
 <!-- ═══ UPLINKS SFP+ ═══ -->
-<div class="panel-section">
+<div class="panel-section" data-tab="11">
   <div class="section-label">Uplinks SFP+</div>
   <div class="form-group">
     <label class="lbl">Ports SFP+ uplink actifs</label>
@@ -491,7 +601,7 @@ textarea.motd-area{font-family:'Share Tech Mono',monospace;font-size:12px;height
 </div><!-- END LEFT PANEL -->
 
 <!-- RIGHT PANEL -->
-<div class="right-panel">
+<div class="right-panel" id="right-panel" data-tab="config">
   <div class="config-toolbar">
     <span class="config-title" id="cli-title">⬡ Configuration — Comware 7 CLI</span>
     <button class="btn-dl" onclick="downloadConfig()">⬇ Télécharger</button>
@@ -846,6 +956,7 @@ function init(){
     addHybridRule();
     syncHybridRules();
     updateVisual();
+    applyResponsiveState();
     setTimeout(generateConfig,200);
   },50);
 }
@@ -1366,6 +1477,66 @@ function downloadConfig(){
   const a=document.createElement('a'); a.href=url; a.download=`${hostname}-config.txt`; a.click();
   URL.revokeObjectURL(url);
 }
+
+// ══════════════════════════════════════════════════════════
+// RESPONSIVE TAB NAVIGATION (mobile/tablet)
+// ══════════════════════════════════════════════════════════
+let currentTab = 0;
+
+function isMobileLayout(){
+  return window.innerWidth <= 900;
+}
+
+function switchTab(tabId){
+  if(!isMobileLayout()) return;
+  currentTab = tabId;
+
+  // Update tab highlight
+  document.querySelectorAll('.mob-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab == tabId);
+  });
+
+  // Handle config tab — show right-panel, hide left-panel sections
+  if(tabId === 'config'){
+    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('tab-visible'));
+    const rp = document.getElementById('right-panel');
+    if(rp) rp.classList.add('tab-visible');
+    // Scroll to top of right panel
+    rp && rp.scrollIntoView({behavior:'smooth', block:'start'});
+  } else {
+    // Hide right panel, show only matching panel-section
+    const rp = document.getElementById('right-panel');
+    if(rp) rp.classList.remove('tab-visible');
+    document.querySelectorAll('.panel-section').forEach(s => {
+      s.classList.toggle('tab-visible', s.dataset.tab == tabId);
+    });
+  }
+  // Scroll nav tab into view
+  const activeNavTab = document.querySelector(`.mob-tab[data-tab="${tabId}"]`);
+  if(activeNavTab) activeNavTab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+
+function applyResponsiveState(){
+  if(isMobileLayout()){
+    // On mobile: apply current tab state
+    switchTab(currentTab);
+  } else {
+    // On desktop: show everything, reset all panel-sections
+    document.querySelectorAll('.panel-section').forEach(s => {
+      s.style.display = '';
+      s.classList.remove('tab-visible');
+    });
+    const rp = document.getElementById('right-panel');
+    if(rp){ rp.classList.add('tab-visible'); rp.style.display = ''; }
+  }
+}
+
+// Listen for resize to toggle between desktop/mobile layout
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(applyResponsiveState, 120);
+});
 
 // ══════════════════════════════════════════════════════════
 init();
