@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Burger Quiz — Administration</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#eee;font-family:Arial,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#000;border-bottom:2px solid #EDD400;flex-shrink:0}
+header img{height:38px}
+header h1{font-size:18px;color:#EDD400;letter-spacing:3px;flex:1}
+header h1 span{color:#CC0000}
+.btn{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;transition:opacity .15s}
+.btn:hover{opacity:.8}
+.btn-yellow{background:#EDD400;color:#000}
+.btn-red{background:#CC0000;color:#fff}
+.btn-gray{background:#333;color:#eee}
+.btn-green{background:#059669;color:#fff}
+main{display:flex;flex:1;overflow:hidden}
+
+/* Left panel */
+#slide-list{width:290px;background:#161616;border-right:1px solid #2a2a2a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#list-header{padding:10px 12px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:8px}
+#list-header span{color:#666;font-size:12px;flex:1}
+#slides-container{flex:1;overflow-y:auto;padding:6px}
+.slide-item{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:5px;background:#1e1e1e;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .15s;user-select:none}
+.slide-item:hover{background:#252525}
+.slide-item.active{border-color:#EDD400;background:#222200}
+.slide-item.drag-over{border-color:#EDD400;border-style:dashed}
+.drag-handle{cursor:grab;color:#444;font-size:14px;flex-shrink:0}
+.drag-handle:active{cursor:grabbing}
+.type-badge{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.slide-info{flex:1;min-width:0}
+.slide-info .stype{font-size:10px;opacity:.5;text-transform:uppercase;letter-spacing:1px}
+.slide-info .spreview{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ccc}
+.slide-del{color:#444;background:none;border:none;cursor:pointer;font-size:14px;padding:2px 5px;flex-shrink:0}
+.slide-del:hover{color:#ef4444}
+
+/* Right editor */
+#editor{flex:1;overflow-y:auto;padding:20px 24px}
+.empty-state{text-align:center;padding:60px 20px;color:#555}
+.empty-state .icon{font-size:56px;margin-bottom:16px}
+.empty-state p{font-size:16px}
+.section-title{color:#EDD400;font-size:16px;font-weight:bold;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #2a2a2a}
+
+/* Type selector */
+.type-selector{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.type-btn{padding:7px 12px;border-radius:7px;border:2px solid transparent;cursor:pointer;font-size:12px;font-weight:bold;color:#fff;opacity:.45;transition:all .15s}
+.type-btn:hover{opacity:.8}
+.type-btn.active{opacity:1;border-color:rgba(255,255,255,.6)}
+
+/* Form */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.form-group input[type=text],.form-group textarea{width:100%;background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:9px 12px;font-size:14px;font-family:inherit}
+.form-group input[type=text]:focus,.form-group textarea:focus{outline:none;border-color:#EDD400}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-hint{font-size:11px;color:#555;margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Media */
+.media-zone{border:2px dashed #333;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-top:6px}
+.media-zone:hover,.media-zone.dragover{border-color:#EDD400;background:#1a1a00}
+.media-zone .mz-icon{font-size:32px;margin-bottom:8px}
+.media-zone .mz-text{color:#555;font-size:13px}
+.media-preview{margin-top:12px}
+.media-preview img{max-width:100%;max-height:180px;border-radius:6px;display:block;margin:0 auto}
+.media-preview video{max-width:100%;max-height:180px;border-radius:6px;display:block;margin:0 auto}
+.media-preview audio{width:100%;margin-top:6px}
+.media-preview .pdf-link{color:#EDD400;text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px}
+.media-name{font-size:11px;color:#666;margin-top:6px;display:flex;align-items:center;gap:8px}
+.media-remove{color:#ef4444;background:none;border:none;cursor:pointer;font-size:11px}
+
+/* Save bar */
+.save-bar{position:sticky;bottom:0;background:#111;padding:14px 0;border-top:1px solid #222;display:flex;gap:10px;margin-top:20px}
+
+/* Type colors */
+.tV{background:#7c3aed}.tN{background:#d97706}.tS{background:#0891b2}
+.tI{background:#059669}.tM{background:#2563eb}.tL{background:#4f46e5}
+.tA{background:#db2777}.tB{background:#dc2626}
+.tC{background:#0d9488}.tG{background:#b45309}.tT{background:#9333ea}
+
+/* Candidats form grid */
+.cand-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+/* Media modal */
+#media-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;overflow-y:auto;padding:20px}
+.modal-box{max-width:860px;margin:auto;background:#1a1a1a;border-radius:12px;padding:24px;border:1px solid #333}
+.modal-box h2{color:#EDD400;margin-bottom:16px}
+.modal-close{float:right;background:none;border:none;color:#aaa;font-size:22px;cursor:pointer}
+.media-grid{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.media-card{background:#222;border-radius:8px;padding:10px;text-align:center;width:140px}
+.media-card img,.media-card video{width:120px;height:80px;object-fit:cover;border-radius:4px;background:#111}
+.media-card .mc-name{font-size:10px;color:#888;margin:6px 0 4px;word-break:break-all}
+.media-card button{font-size:11px;background:#333;border:none;color:#ef4444;cursor:pointer;border-radius:4px;padding:2px 8px}
+
+/* BDM list items */
+.bdm-list-item{padding:10px 12px;border-radius:8px;background:#1e1e1e;cursor:pointer;border:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:8px}
+.bdm-list-item:hover{background:#252525}
+.bdm-list-item.active{border-color:#CC0000;background:#1a0000}
+.bdm-list-item .bdm-li-name{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdm-list-item .bdm-li-count{font-size:11px;color:#555;flex-shrink:0}
+.bdm-list-item .bdm-star{color:#EDD400;flex-shrink:0;font-size:14px}
+.bdm-q-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bdm-q-num{font-family:'BQ',sans-serif;font-size:28px;color:#CC0000;width:32px;text-align:center;flex-shrink:0}
+.bdm-q-row input{flex:1;background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:9px 12px;font-size:15px;font-family:inherit}
+.bdm-q-row input:focus{outline:none;border-color:#CC0000}
+.btn-redlight{background:#3a0000;color:#ff6666;border:1px solid #CC0000}
+.btn-redlight:hover{background:#CC0000;color:#fff}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+
+/* ── Overlay mobile ── */
+#mobile-wall{display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+#mobile-wall .mw-icon{font-size:64px;margin-bottom:20px}
+#mobile-wall .mw-title{font-size:26px;font-weight:bold;color:#EDD400;letter-spacing:3px;margin-bottom:12px}
+#mobile-wall .mw-sub{font-size:15px;color:#888;line-height:1.7}
+@media(max-width:900px){#mobile-wall{display:flex}}
+
+/* ── Bannière import ── */
+#import-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;background:#1a0a00;border-top:3px solid #EDD400;padding:16px 24px;flex-direction:column;align-items:center;gap:12px}
+#import-banner .ib-title{font-size:18px;font-weight:bold;color:#EDD400;letter-spacing:2px}
+#import-banner .ib-sub{font-size:13px;color:#aaa;text-align:center;line-height:1.6}
+#import-banner .ib-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- Overlay mobile -->
+<div id="mobile-wall">
+  <div class="mw-icon">💻</div>
+  <div class="mw-title">ORDINATEUR UNIQUEMENT</div>
+  <div class="mw-sub">
+    Burger Quiz est conçu pour être animé<br>
+    sur un <strong style="color:#eee">ordinateur</strong> ou une <strong style="color:#eee">télévision</strong>.<br><br>
+    Connectez-vous depuis un écran plus grand.
+  </div>
+</div>
+
+<!-- Bannière : aucune donnée trouvée (nouveau navigateur) -->
+<div id="import-banner">
+  <div class="ib-title">⚠️ Aucune donnée trouvée dans ce navigateur</div>
+  <div class="ib-sub">
+    Les données (listes, slides, médias) sont stockées <strong>par navigateur</strong>.<br>
+    Si vous avez créé vos listes dans un autre navigateur, importez votre fichier JSON de sauvegarde.
+  </div>
+  <div class="ib-actions">
+    <button class="btn btn-yellow" onclick="doImport()">⬆ Importer mon fichier JSON</button>
+    <button class="btn btn-gray" onclick="document.getElementById('import-banner').style.display='none'">Commencer à zéro</button>
+  </div>
+</div>
+
+<header>
+  <img src="img/logo.png" onerror="this.style.display='none'">
+  <h1>BURGER QUIZ <span>ADMIN</span></h1>
+  <div id="list-widget" onclick="openListsPanel()" title="Cliquer pour gérer les listes"
+       style="display:flex;align-items:center;gap:6px;background:#1a1a00;border:1px solid #444;border-radius:6px;padding:5px 12px;cursor:pointer;max-width:220px;overflow:hidden;flex-shrink:0">
+    <span style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;flex-shrink:0">Liste</span>
+    <span id="current-list-name" style="color:#EDD400;font-weight:bold;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">(non nommée)</span>
+    <span style="color:#555;font-size:12px;flex-shrink:0">▾</span>
+  </div>
+  <button class="btn btn-gray" onclick="newListFromHeader()" style="flex-shrink:0">＋ Liste</button>
+  <button class="btn btn-yellow" onclick="addSlide()">＋ Nouveau slide</button>
+  <button class="btn btn-gray"   onclick="doImport()">⬆ Importer</button>
+  <button class="btn btn-gray"   onclick="doExport()">⬇ Exporter</button>
+  <button class="btn btn-gray"   onclick="openMediaLibrary()">🖼 Médias</button>
+  <button class="btn btn-red"    onclick="openBDMPanel()">💀 Listes BDM</button>
+  <button class="btn btn-gray"   onclick="openSettings()">⚙ Paramètres</button>
+  <button class="btn btn-gray"   onclick="if(confirm('Retourner à l\'accueil ?')) window.location.href='index.html'">🏠 Accueil</button>
+  <button class="btn btn-green"  onclick="playCurrentList()">▶ Jouer</button>
+</header>
+
+<main>
+  <!-- Slide list -->
+  <div id="slide-list">
+    <div id="list-header">
+      <span id="slide-count">0 slide(s)</span>
+    </div>
+    <div id="slides-container"></div>
+  </div>
+
+  <!-- Editor -->
+  <div id="editor">
+    <div class="empty-state" id="empty-state">
+      <div class="icon">🍔</div>
+      <p>Sélectionnez un slide ou créez-en un nouveau</p>
+    </div>
+    <div id="editor-form" style="display:none">
+      <div class="section-title">Type de slide</div>
+      <div class="type-selector" id="type-selector"></div>
+      <div id="fields"></div>
+
+      <!-- Media section -->
+      <div class="form-group" id="media-section">
+        <label>Média attaché (image, vidéo, audio, PDF)</label>
+        <div class="media-zone" id="media-zone"
+             onclick="document.getElementById('mediaFile').click()"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleMediaDrop(event)">
+          <div class="mz-icon">📎</div>
+          <div class="mz-text">Glisser-déposer ou cliquer pour choisir un fichier<br>
+            <small>MP3, MP4, JPEG, PNG, GIF, PDF, WEBM…</small>
+          </div>
+        </div>
+        <input type="file" id="mediaFile" accept="audio/*,video/*,image/*,.pdf"
+               style="display:none" onchange="handleMediaFile(this.files[0])">
+        <div id="media-preview" class="media-preview"></div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn btn-yellow"  onclick="saveSlide()">💾 Enregistrer</button>
+        <button class="btn btn-red"     onclick="deleteSlide()">🗑 Supprimer</button>
+        <button class="btn btn-gray"    onclick="duplicateSlide()">📋 Dupliquer</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Import file inputs (hidden) -->
+<input type="file" id="importJSON" accept=".json" style="display:none" onchange="handleImportJSON(this)">
+<input type="file" id="importCSV"  accept=".csv,.txt" style="display:none" onchange="handleImportCSV(this)">
+
+<!-- BDM Lists modal -->
+<div id="bdm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;overflow:hidden;padding:20px">
+  <div class="modal-box" style="max-width:1000px;height:calc(100vh - 40px);display:flex;flex-direction:column">
+    <button class="modal-close" onclick="document.getElementById('bdm-modal').style.display='none'">✕</button>
+    <h2 style="color:#CC0000">💀 Burger de la Mort — Listes de questions</h2>
+    <p style="color:#555;font-size:13px;margin:6px 0 16px">
+      Préparez plusieurs listes de 10 questions. Activez celle à utiliser lors de la partie.
+    </p>
+    <div style="display:flex;gap:16px;flex:1;overflow:hidden">
+
+      <!-- Liste des listes -->
+      <div style="width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-red" style="width:100%" onclick="newBDMList()">＋ Nouvelle liste</button>
+        <div id="bdm-lists-ul" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- Éditeur -->
+      <div id="bdm-editor" style="flex:1;overflow-y:auto;padding-right:4px">
+        <div class="empty-state">
+          <div class="icon">💀</div>
+          <p>Sélectionnez une liste ou créez-en une nouvelle</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Paramètres modal -->
+<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;overflow-y:auto;padding:20px">
+  <div class="modal-box" style="max-width:560px">
+    <button class="modal-close" onclick="document.getElementById('settings-modal').style.display='none'">✕</button>
+    <h2>⚙ Paramètres</h2>
+
+    <div style="margin-top:20px">
+      <div class="section-title" style="margin-bottom:12px">💀 Burger de la Mort — Musique de fond</div>
+      <p style="color:#666;font-size:13px;margin-bottom:12px">
+        Cette musique joue en boucle sur toutes les questions "Burger de la Mort".<br>
+        Formats acceptés : MP3, WAV, OGG, M4A…
+      </p>
+      <div class="media-zone" onclick="document.getElementById('bdmMusicFile').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleBDMDrop(event)">
+        <div class="mz-icon">🎵</div>
+        <div class="mz-text">Glisser-déposer ou cliquer pour choisir la musique</div>
+      </div>
+      <input type="file" id="bdmMusicFile" accept="audio/*" style="display:none"
+             onchange="uploadBDMMusic(this.files[0])">
+      <div id="bdm-music-info" style="margin-top:12px"></div>
+    </div>
+
+    <div style="margin-top:28px">
+      <div class="section-title" style="margin-bottom:12px">🏆 Musique de victoire</div>
+      <p style="color:#666;font-size:13px;margin-bottom:12px">
+        Cette musique joue pendant les 11 secondes de célébration quand une équipe atteint 25 pts.<br>
+        Formats acceptés : MP3, WAV, OGG, M4A…
+      </p>
+      <div class="media-zone" onclick="document.getElementById('victoryMusicFile').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleVictoryDrop(event)">
+        <div class="mz-icon">🏆</div>
+        <div class="mz-text">Glisser-déposer ou cliquer pour choisir la musique</div>
+      </div>
+      <input type="file" id="victoryMusicFile" accept="audio/*" style="display:none"
+             onchange="uploadVictoryMusic(this.files[0])">
+      <div id="victory-music-info" style="margin-top:12px"></div>
+    </div>
+
+    <div style="margin-top:28px">
+      <div class="section-title" style="margin-bottom:12px">🎬 Générique de fin</div>
+      <p style="color:#666;font-size:13px;margin-bottom:12px">
+        Vidéo jouée après le Burger de la Mort réussi (crédits de fin, style émission TV).<br>
+        Formats acceptés : MP4, WEBM…
+      </p>
+      <div class="media-zone" onclick="document.getElementById('generiqueFin').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleGeneriqueDrop(event)">
+        <div class="mz-icon">🎬</div>
+        <div class="mz-text">Glisser-déposer ou cliquer pour choisir la vidéo</div>
+      </div>
+      <input type="file" id="generiqueFin" accept="video/*" style="display:none"
+             onchange="uploadGenerique(this.files[0])">
+      <div id="generique-info" style="margin-top:12px"></div>
+    </div>
+
+    <div style="margin-top:28px;padding-bottom:8px">
+      <div class="section-title" style="margin-bottom:12px">🌅 Retour au calme</div>
+      <p style="color:#666;font-size:13px;margin-bottom:12px">
+        Écran affiché après le générique de fin. Personnalisez le titre et le message.
+      </p>
+      <div class="form-group">
+        <label>Titre</label>
+        <input type="text" id="rc-titre" placeholder="Ex: FIN DE L'ÉMISSION">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea id="rc-message" rows="2" placeholder="Ex: Merci d'avoir participé !"></textarea>
+      </div>
+      <button class="btn btn-yellow" style="width:100%" onclick="saveRetourCalme()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Media library modal -->
+<div id="media-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('media-modal').style.display='none'">✕</button>
+    <h2>🖼 Bibliothèque de médias</h2>
+    <p style="color:#666;font-size:13px">Fichiers stockés dans le navigateur (IndexedDB)</p>
+    <div class="media-grid" id="media-grid"></div>
+  </div>
+</div>
+
+<!-- Modal gestion des listes de questions -->
+<div id="qlists-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;overflow-y:auto;padding:20px">
+  <div class="modal-box" style="max-width:520px">
+    <button class="modal-close" onclick="document.getElementById('qlists-modal').style.display='none'">✕</button>
+    <h2 style="color:#EDD400">📋 Listes de questions</h2>
+    <p style="color:#555;font-size:13px;margin:8px 0 16px">Chaque liste est un set de questions indépendant.</p>
+    <button class="btn btn-yellow" style="margin-bottom:16px;width:100%" onclick="newListFromHeader();document.getElementById('qlists-modal').style.display='none'">＋ Nouvelle liste</button>
+    <div id="qlists-ul"></div>
+  </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+/* ─── Config des types ─────────────────────────────────────────────── */
+const TYPES = {
+  V: { label: 'Vidéo',          icon: '🎬', cls: 'tV' },
+  N: { label: 'Nuggets',        icon: '🍟', cls: 'tN' },
+  S: { label: 'Sel ou Poivre',  icon: '🧂', cls: 'tS' },
+  I: { label: 'Image',          icon: '🖼️', cls: 'tI' },
+  M: { label: 'Menu',           icon: '🍔', cls: 'tM' },
+  L: { label: 'Liste menus',    icon: '📋', cls: 'tL' },
+  A: { label: 'Addition',       icon: '➕', cls: 'tA' },
+  B: { label: 'Burger Mort',    icon: '💀', cls: 'tB' },
+  C: { label: 'Candidats',     icon: '👥', cls: 'tC' },
+  G: { label: 'Cadeau',        icon: '🎁', cls: 'tG' },
+  T: { label: 'Toss',          icon: '🎲', cls: 'tT' },
+};
+
+const FIELDS = {
+  V: [{ id:'mediaName', label:'Nom du fichier vidéo (ex: intro.mp4)',  hint:'Uploadez ci-dessous ou tapez le nom d\'un fichier dans le dossier videos/' }],
+  N: [
+    { id:'question',      label:'Question', textarea:true },
+    { id:'answerA',       label:'Réponse A' },
+    { id:'answerB',       label:'Réponse B' },
+    { id:'answerC',       label:'Réponse C' },
+    { id:'answerD',       label:'Réponse D' },
+    { id:'correctAnswer', label:'Bonne réponse', type:'select',
+      options:['','A','B','C','D'], labels:['— choisir —','A','B','C','D'] },
+  ],
+  S: [
+    { id:'question', label:'Question', textarea:true },
+    { id:'answer',   label:'Proposition affichée (SEL = vrai, POIVRE = faux)' },
+  ],
+  I: [
+    { id:'title',    label:'Titre' },
+    { id:'question', label:'Question', textarea:true },
+  ],
+  M: [
+    { id:'question', label:'Titre du menu' },
+    { id:'answer',   label:'Description / Question', textarea:true },
+  ],
+  L: [], // rendered by renderMenuListFields
+  A: [
+    { id:'title',  label:'Titre de l\'addition' },
+    { id:'answer', label:'Total / Proposition' },
+  ],
+  B: [{ id:'question', label:'Question', textarea:true }],
+  C: [], // rendered by renderCandidatsFieldsSync
+  G: [
+    { id:'title',       label:'Titre du cadeau' },
+    { id:'description', label:'Description / Valeur', textarea:true },
+    { id:'enabled',     label:'Visible en jeu (cocher = cadeau affiche)', type:'checkbox' },
+  ],
+  T: [
+    { id:'gameName',     label:'Nom affiche du jeu' },
+    { id:'gameType',     label:'Type de jeu', type:'select',
+      options:['koala','buzzer','dernier_doigt','pierre_feuille_ciseaux','imitation','personnalise'],
+      labels:['Imitation Koala','Premier sur le Buzzer','Dernier Doigt',
+              'Pierre Feuille Ciseaux','Imitation libre','Personnalise'] },
+    { id:'instructions', label:'Instructions pour les joueurs', textarea:true },
+  ],
+};
+
+/* ─── État ─────────────────────────────────────────────────────────── */
+let slides = [];
+let currentId        = null;
+let pendingMedia     = null; // {blob, name, type} | {remove:true}
+let previewURL       = null;
+let pendingCandPhotos = { 1: null, 2: null };
+let candPreviewURLs   = { 1: null, 2: null };
+let currentListId     = null;
+
+/* ─── Listes de questions ────────────────────────────────────────────── */
+function getQLists()         { try { return JSON.parse(localStorage.bq_qlists  || '[]'); } catch(_) { return []; } }
+function saveQLists(l)       { localStorage.bq_qlists   = JSON.stringify(l); }
+function getActiveListId()   { return localStorage.bq_active_qlist  || null; }
+function setActiveListId(id) { localStorage.bq_active_qlist = id || ''; }
+
+function getListName(id) {
+  return getQLists().find(l => l.id === id)?.name || '';
+}
+
+function updateListHeader() {
+  const n  = getListName(currentListId);
+  const el = document.getElementById('current-list-name');
+  if (el) el.textContent = n || '(non nommee)';
+}
+
+function ensureList() {
+  let lists = getQLists();
+  let id    = getActiveListId();
+  if (!lists.length) {
+    // Aucune donnée dans ce navigateur — proposer l'import
+    document.getElementById('import-banner').style.display = 'flex';
+  }
+  if (!id || !lists.find(l => l.id === id)) {
+    id = BQ_DB.uuid();
+    lists.push({ id, name: '' });
+    saveQLists(lists);
+    setActiveListId(id);
+  }
+  currentListId = id;
+  updateListHeader();
+}
+
+async function migrateOrphans() {
+  const all     = await BQ_DB.getSlides();
+  const orphans = all.filter(s => !s.listId);
+  if (!orphans.length) return;
+  let lists = getQLists();
+  let migId = lists.find(l => l._migrated)?.id;
+  if (!migId) {
+    migId = BQ_DB.uuid();
+    lists.unshift({ id: migId, name: 'Questions importees', _migrated: true });
+    saveQLists(lists);
+  }
+  for (const s of orphans) { s.listId = migId; await BQ_DB.putSlide(s); }
+  setActiveListId(migId);
+  currentListId = migId;
+  updateListHeader();
+}
+
+function newListFromHeader() {
+  const id    = BQ_DB.uuid();
+  const lists = getQLists();
+  lists.push({ id, name: '' });
+  saveQLists(lists);
+  setActiveListId(id);
+  currentListId = id;
+  slides = [];
+  clearEditor();
+  renderList();
+  updateListHeader();
+  toast('Nouvelle liste creee. Appuyez sur Enregistrer pour la nommer.', '#2563eb');
+}
+
+function openListsPanel() {
+  renderListsModal();
+  document.getElementById('qlists-modal').style.display = 'block';
+}
+
+function renderListsModal() {
+  const lists = getQLists();
+  const ul    = document.getElementById('qlists-ul');
+  ul.innerHTML = '';
+  if (!lists.length) {
+    ul.innerHTML = '<p style="color:#555;padding:20px;text-align:center">Aucune liste</p>';
+    return;
+  }
+  lists.forEach(l => {
+    const isActive = l.id === currentListId;
+    const div      = document.createElement('div');
+    div.style.cssText = `display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:${isActive ? '#222200' : '#1e1e1e'};border:2px solid ${isActive ? '#EDD400' : 'transparent'};margin-bottom:6px`;
+    div.innerHTML = `
+      <span style="flex:1;font-size:14px;color:${isActive ? '#EDD400' : '#eee'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(l.name || '(non nommee)')}</span>
+      <button class="btn btn-gray" style="padding:4px 10px;font-size:12px;flex-shrink:0" onclick="renameQList('${l.id}')">✏ Renommer</button>
+      ${isActive
+        ? '<span style="font-size:11px;color:#888;flex-shrink:0">actuelle</span>'
+        : `<button class="btn btn-gray" style="padding:4px 10px;font-size:12px;flex-shrink:0" onclick="switchList('${l.id}')">Ouvrir</button>`}
+      <button class="btn btn-red" style="padding:4px 10px;font-size:12px;flex-shrink:0" onclick="deleteQList('${l.id}')">🗑</button>`;
+    ul.appendChild(div);
+  });
+}
+
+function renameQList(id) {
+  const lists = getQLists();
+  const l     = lists.find(l => l.id === id);
+  if (!l) return;
+  const nom = prompt('Nouveau nom pour la liste :', l.name || '');
+  if (nom === null) return;
+  const trimmed = nom.trim();
+  if (!trimmed) { toast('Le nom ne peut pas etre vide.', '#CC0000'); return; }
+  l.name = trimmed;
+  saveQLists(lists);
+  if (id === currentListId) updateListHeader();
+  renderListsModal();
+  toast('Liste renommee ✓', '#059669');
+}
+
+function switchList(id) {
+  setActiveListId(id);
+  currentListId = id;
+  document.getElementById('qlists-modal').style.display = 'none';
+  clearEditor();
+  loadAll();
+}
+
+async function deleteQList(id) {
+  if (!confirm('Supprimer cette liste et toutes ses questions ?')) return;
+  const all = await BQ_DB.getSlides();
+  for (const s of all.filter(s => s.listId === id)) await BQ_DB.delSlide(s.id);
+  let lists = getQLists().filter(l => l.id !== id);
+  saveQLists(lists);
+  if (currentListId === id) {
+    if (lists.length) {
+      setActiveListId(lists[0].id);
+      currentListId = lists[0].id;
+    } else {
+      ensureList();
+    }
+    clearEditor();
+    loadAll();
+  }
+  renderListsModal();
+  toast('Liste supprimee', '#CC0000');
+}
+
+function playCurrentList() {
+  if (!currentListId) { alert('Aucune liste active.'); return; }
+  window.open('burgerquizz.html?list=' + currentListId);
+}
+
+/* ─── Éditeur Menu Liste ────────────────────────────────────────────── */
+function menuQRowHtml(n, i, q) {
+  return `<div style="display:flex;gap:8px;margin-bottom:8px">
+    <input type="text" class="mq-q" data-n="${n}" data-i="${i}" value="${escAttr(q.q||'')}"
+           placeholder="Question" style="flex:2;background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:8px 10px;font-size:13px;font-family:inherit">
+    <input type="text" class="mq-a" data-n="${n}" data-i="${i}" value="${escAttr(q.a||'')}"
+           placeholder="Reponse" style="flex:1;background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:8px 10px;font-size:13px;font-family:inherit">
+    <button class="btn btn-red" style="padding:6px 10px;flex-shrink:0" onclick="removeMQ(${n},${i})">✕</button>
+  </div>`;
+}
+
+function renderMenuListFields(s) {
+  document.getElementById('media-section').style.display = 'none';
+  document.getElementById('fields').innerHTML = [1, 2, 3].map(n => `
+    <div style="margin-bottom:24px">
+      <div class="section-title">Menu ${n}</div>
+      <div class="form-group">
+        <label>Nom du menu</label>
+        <input type="text" id="f-item${n}" value="${escAttr(s['item'+n]||'')}" placeholder="Ex: Le Classique">
+      </div>
+      <div class="section-title" style="font-size:12px;color:#888;margin:10px 0 8px">Questions</div>
+      <div id="mq-rows-${n}">${(s['item'+n+'Questions']||[]).map((q,i) => menuQRowHtml(n,i,q)).join('')}</div>
+      <button class="btn btn-gray" style="width:100%;margin-top:6px" onclick="addMQ(${n})">＋ Question</button>
+    </div>`).join('<hr style="border:none;border-top:1px solid #222;margin-bottom:24px">');
+}
+
+function collectCurrentMQ(n) {
+  const qIn = document.querySelectorAll(`.mq-q[data-n="${n}"]`);
+  const aIn = document.querySelectorAll(`.mq-a[data-n="${n}"]`);
+  return Array.from(qIn).map((el,i) => ({ q: el.value.trim(), a: aIn[i]?.value.trim()||'' }));
+}
+
+function addMQ(n) {
+  const s = slides.find(x => x.id === currentId); if (!s) return;
+  const key = 'item'+n+'Questions';
+  s[key] = collectCurrentMQ(n);
+  s[key].push({q:'',a:''});
+  const c = document.getElementById('mq-rows-'+n);
+  c.insertAdjacentHTML('beforeend', menuQRowHtml(n, s[key].length-1, {q:'',a:''}));
+}
+
+function removeMQ(n, i) {
+  const s = slides.find(x => x.id === currentId); if (!s) return;
+  const key = 'item'+n+'Questions';
+  s[key] = collectCurrentMQ(n);
+  s[key].splice(i, 1);
+  document.getElementById('mq-rows-'+n).innerHTML = s[key].map((q,idx) => menuQRowHtml(n,idx,q)).join('');
+}
+
+function collectMenuListData(s) {
+  [1,2,3].forEach(n => {
+    const el = document.getElementById('f-item'+n);
+    if (el) s['item'+n] = el.value.trim();
+    s['item'+n+'Questions'] = collectCurrentMQ(n).filter(r => r.q || r.a);
+  });
+}
+
+/* ─── Init ─────────────────────────────────────────────────────────── */
+// Build type buttons
+const typeSel = document.getElementById('type-selector');
+Object.entries(TYPES).forEach(([k, v]) => {
+  const b = document.createElement('button');
+  b.className = `type-btn ${v.cls}`;
+  b.dataset.type = k;
+  b.textContent = `${v.icon} ${v.label}`;
+  b.onclick = () => changeType(k);
+  typeSel.appendChild(b);
+});
+
+async function loadAll() {
+  ensureList();
+  await migrateOrphans();
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  renderList();
+  if (currentId) {
+    if (slides.find(x => x.id === currentId)) selectSlide(currentId);
+    else clearEditor();
+  }
+}
+
+/* ─── Slide list ────────────────────────────────────────────────────── */
+function renderList() {
+  const c = document.getElementById('slides-container');
+  document.getElementById('slide-count').textContent = slides.length + ' slide(s)';
+  c.innerHTML = '';
+  slides.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'slide-item' + (s.id === currentId ? ' active' : '');
+    div.dataset.id  = s.id;
+    div.dataset.idx = i;
+    div.draggable   = true;
+    const t = TYPES[s.type] || { icon: '?', cls: '' };
+    div.innerHTML = `
+      <span class="drag-handle">⠿</span>
+      <div class="type-badge ${t.cls}">${t.icon}</div>
+      <div class="slide-info">
+        <div class="stype">${t.label || s.type}</div>
+        <div class="spreview">${escHtml(getPreview(s))}</div>
+      </div>
+      <button class="slide-del" onclick="event.stopPropagation();deleteSlideById('${s.id}')">✕</button>`;
+    div.onclick = () => selectSlide(s.id);
+    setupDrag(div);
+    c.appendChild(div);
+  });
+}
+
+function getPreview(s) {
+  switch (s.type) {
+    case 'V': return s.mediaName || '(vidéo)';
+    case 'N': return s.question  || '(question)';
+    case 'S': return s.question  || '(question)';
+    case 'I': return s.question  || s.title || '(image)';
+    case 'M': return s.question  || '(menu)';
+    case 'L': return [s.item1, s.item2, s.item3].filter(Boolean).join(' / ') || '(liste)';
+    case 'A': return s.title     || '(addition)';
+    case 'B': return s.question  || '(burger mort)';
+    case 'C': return [s.cand1Name, s.cand2Name].filter(Boolean).join(' & ') || '(candidats)';
+    case 'G': return s.title     || '(cadeau)';
+    case 'T': return s.gameName  || s.gameType || '(toss)';
+    default:  return '';
+  }
+}
+
+/* ─── Drag & drop pour réordonner ───────────────────────────────────── */
+let dragSrcIdx = null;
+
+function setupDrag(el) {
+  el.addEventListener('dragstart', () => {
+    dragSrcIdx = +el.dataset.idx;
+    el.style.opacity = '.4';
+  });
+  el.addEventListener('dragend',  () => { el.style.opacity = ''; el.classList.remove('drag-over'); });
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+  el.addEventListener('dragleave',() => el.classList.remove('drag-over'));
+  el.addEventListener('drop', async e => {
+    e.preventDefault();
+    el.classList.remove('drag-over');
+    const target = +el.dataset.idx;
+    if (dragSrcIdx === null || dragSrcIdx === target) return;
+    const [moved] = slides.splice(dragSrcIdx, 1);
+    slides.splice(target, 0, moved);
+    slides.forEach((s, i) => s.order = i);
+    await Promise.all(slides.map(s => BQ_DB.putSlide(s)));
+    dragSrcIdx = null;
+    renderList();
+  });
+}
+
+/* ─── Éditeur ───────────────────────────────────────────────────────── */
+function selectSlide(id) {
+  currentId    = id;
+  pendingMedia = null;
+  pendingCandPhotos = { 1: null, 2: null };
+  [1, 2].forEach(n => {
+    if (candPreviewURLs[n]) { URL.revokeObjectURL(candPreviewURLs[n]); candPreviewURLs[n] = null; }
+  });
+  if (previewURL) { URL.revokeObjectURL(previewURL); previewURL = null; }
+  const s = slides.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('empty-state').style.display  = 'none';
+  document.getElementById('editor-form').style.display  = 'block';
+  document.querySelectorAll('.type-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.type === s.type));
+  renderFields(s);
+  renderMediaPreview(s);
+  renderList();
+}
+
+function clearEditor() {
+  currentId = null;
+  document.getElementById('empty-state').style.display  = 'block';
+  document.getElementById('editor-form').style.display  = 'none';
+}
+
+function renderFields(s) {
+  if (s.type === 'C') {
+    renderCandidatsFieldsSync(s);
+    loadCandidatsPreviewsAsync(s);
+    document.getElementById('media-section').style.display = 'none';
+    return;
+  }
+
+  if (s.type === 'L') {
+    renderMenuListFields(s);
+    return;
+  }
+
+  const defs = FIELDS[s.type] || [];
+  document.getElementById('fields').innerHTML = defs.map(f => {
+    let input;
+    if (f.textarea) {
+      input = `<textarea id="f-${f.id}" rows="3">${escHtml(s[f.id] || '')}</textarea>`;
+    } else if (f.type === 'select') {
+      const opts = (f.options || []).map((v, i) =>
+        `<option value="${escAttr(v)}" ${s[f.id] === v ? 'selected' : ''}>${escHtml(f.labels?.[i] ?? v)}</option>`
+      ).join('');
+      input = `<select id="f-${f.id}" style="background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:9px 12px;font-size:14px;width:100%">${opts}</select>`;
+    } else if (f.type === 'checkbox') {
+      const chk = s[f.id] ? 'checked' : '';
+      return `<div class="form-group">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:normal;text-transform:none;letter-spacing:0;font-size:14px;color:#ccc">
+          <input type="checkbox" id="f-${f.id}" ${chk} style="width:18px;height:18px;cursor:pointer">
+          ${escHtml(f.label)}
+        </label>
+      </div>`;
+    } else {
+      input = `<input type="text" id="f-${f.id}" value="${escAttr(s[f.id] || '')}">`;
+    }
+    return `<div class="form-group">
+      <label>${escHtml(f.label)}</label>${input}
+      ${f.hint ? `<div class="form-hint">${f.hint}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('media-section').style.display = 'block';
+  const mediaLabel = document.querySelector('#media-section label');
+  if (s.type === 'V') mediaLabel.textContent = 'Fichier video (MP4, WEBM)';
+  else if (s.type === 'T') mediaLabel.textContent = 'Video de revelation (ESPACE pour lancer)';
+  else mediaLabel.textContent = 'Media attache (image, video, audio, PDF)';
+}
+
+async function renderMediaPreview(s) {
+  const prev = document.getElementById('media-preview');
+  prev.innerHTML = '';
+  if (!s.mediaName) return;
+  const url = await BQ_DB.mediaURL(s.mediaName);
+  if (url && url.startsWith('blob:')) previewURL = url;
+  displayMediaPreview(url, s.mediaName, prev);
+}
+
+function displayMediaPreview(url, name, container) {
+  if (!url || !name) return;
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  let html = '';
+  if (['jpg','jpeg','png','gif','webp'].includes(ext))
+    html = `<img src="${url}" alt="${escAttr(name)}">`;
+  else if (['mp4','webm'].includes(ext))
+    html = `<video controls src="${url}"></video>`;
+  else if (['mp3','wav','ogg','m4a'].includes(ext))
+    html = `<audio controls src="${url}"></audio>`;
+  else if (ext === 'pdf')
+    html = `<a href="${url}" target="_blank" class="pdf-link">📄 ${escHtml(name)}</a>`;
+  else
+    html = `<div style="color:#888;font-size:13px">📎 ${escHtml(name)}</div>`;
+  html += `<div class="media-name">${escHtml(name)}
+    <button class="media-remove" onclick="removeMedia()">✕ Supprimer</button></div>`;
+  container.innerHTML = html;
+}
+
+/* ─── Upload de média ───────────────────────────────────────────────── */
+function handleMediaDrop(e) {
+  e.preventDefault();
+  document.getElementById('media-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleMediaFile(file);
+}
+
+function handleMediaFile(file) {
+  if (!file) return;
+  pendingMedia = { blob: file, name: file.name, mediaType: file.type };
+  if (previewURL) { URL.revokeObjectURL(previewURL); }
+  previewURL = URL.createObjectURL(file);
+  displayMediaPreview(previewURL, file.name, document.getElementById('media-preview'));
+  // Si type V, mettre à jour aussi le champ texte
+  const fld = document.getElementById('f-mediaName');
+  if (fld) fld.value = file.name;
+}
+
+function removeMedia() {
+  pendingMedia = { remove: true };
+  document.getElementById('media-preview').innerHTML = '';
+  const fld = document.getElementById('f-mediaName');
+  if (fld) fld.value = '';
+}
+
+/* ─── Candidats fields ──────────────────────────────────────────────── */
+function renderCandidatsFieldsSync(s) {
+  function col(n) {
+    const p = 'cand' + n;
+    const tv = s[p + 'Team'] || '';
+    return `<div>
+      <div class="section-title" style="font-size:13px;margin-bottom:10px">Candidat ${n}</div>
+      <div class="form-group"><label>Prenom</label>
+        <input type="text" id="f-${p}Name" value="${escAttr(s[p+'Name']||'')}"></div>
+      <div class="form-group"><label>Age</label>
+        <input type="text" id="f-${p}Age" value="${escAttr(s[p+'Age']||'')}"></div>
+      <div class="form-group"><label>Metier</label>
+        <input type="text" id="f-${p}Job" value="${escAttr(s[p+'Job']||'')}"></div>
+      <div class="form-group"><label>Equipe</label>
+        <select id="f-${p}Team" style="background:#1e1e1e;border:1px solid #333;border-radius:6px;color:#eee;padding:9px 12px;font-size:14px;width:100%">
+          <option value="" ${!tv?'selected':''}>— aucune —</option>
+          <option value="mayo"    ${tv==='mayo'   ?'selected':''}>Mayonnaise</option>
+          <option value="ketchup" ${tv==='ketchup'?'selected':''}>Ketchup</option>
+        </select></div>
+      <div class="form-group"><label>Photo</label>
+        <div class="media-zone" id="cand-zone-${n}"
+             onclick="document.getElementById('candFile${n}').click()"
+             ondragover="event.preventDefault();this.classList.add('dragover')"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="handleCandDrop(event,${n})">
+          <div class="mz-icon">&#128247;</div>
+          <div class="mz-text">Cliquer ou glisser une photo</div>
+        </div>
+        <input type="file" id="candFile${n}" accept="image/*" style="display:none"
+               onchange="handleCandFile(this.files[0],${n})">
+        <div id="cand-preview-${n}" class="media-preview"></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('fields').innerHTML =
+    `<div class="cand-form-grid">${col(1)}${col(2)}</div>`;
+}
+
+async function loadCandidatsPreviewsAsync(s) {
+  for (const n of [1, 2]) {
+    const photo = s['cand' + n + 'Photo'];
+    if (!photo) continue;
+    if (candPreviewURLs[n]) { URL.revokeObjectURL(candPreviewURLs[n]); candPreviewURLs[n] = null; }
+    const url = await BQ_DB.mediaURL(photo);
+    if (!url) continue;
+    if (url.startsWith('blob:')) candPreviewURLs[n] = url;
+    showCandPreview(n, url, photo);
+  }
+}
+
+function showCandPreview(n, url, name) {
+  const prev = document.getElementById('cand-preview-' + n);
+  if (!prev) return;
+  prev.innerHTML = `
+    <img src="${url}" style="max-width:100%;max-height:130px;border-radius:6px;display:block;margin:8px auto 0">
+    <div class="media-name">${escHtml(name)}
+      <button class="media-remove" onclick="removeCandPhoto(${n})">&#10005; Retirer</button>
+    </div>`;
+}
+
+function handleCandDrop(e, n) {
+  e.preventDefault();
+  document.getElementById('cand-zone-' + n)?.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleCandFile(file, n);
+}
+
+function handleCandFile(file, n) {
+  if (!file) return;
+  pendingCandPhotos[n] = { blob: file, name: file.name };
+  if (candPreviewURLs[n]) URL.revokeObjectURL(candPreviewURLs[n]);
+  candPreviewURLs[n] = URL.createObjectURL(file);
+  showCandPreview(n, candPreviewURLs[n], file.name);
+}
+
+function removeCandPhoto(n) {
+  pendingCandPhotos[n] = { remove: true };
+  if (candPreviewURLs[n]) { URL.revokeObjectURL(candPreviewURLs[n]); candPreviewURLs[n] = null; }
+  const prev = document.getElementById('cand-preview-' + n);
+  if (prev) prev.innerHTML = '';
+}
+
+async function saveCandidatsSlide(s) {
+  ['cand1Name','cand1Age','cand1Job','cand1Team',
+   'cand2Name','cand2Age','cand2Job','cand2Team'].forEach(id => {
+    const el = document.getElementById('f-' + id);
+    if (el) s[id] = el.value.trim();
+  });
+  for (const n of [1, 2]) {
+    const pm  = pendingCandPhotos[n];
+    const key = 'cand' + n + 'Photo';
+    if (pm?.remove) {
+      if (s[key]) await BQ_DB.delMedia(s[key]).catch(() => {});
+      s[key] = '';
+    } else if (pm?.blob) {
+      await BQ_DB.putMedia(pm.name, pm.blob);
+      s[key] = pm.name;
+    }
+  }
+  pendingCandPhotos = { 1: null, 2: null };
+}
+
+/* ─── Changer le type ───────────────────────────────────────────────── */
+function changeType(type) {
+  const s = slides.find(x => x.id === currentId);
+  if (!s) return;
+  s.type = type;
+  pendingMedia = null;
+  pendingCandPhotos = { 1: null, 2: null };
+  document.getElementById('media-preview').innerHTML = '';
+  document.querySelectorAll('.type-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.type === type));
+  renderFields(s);
+}
+
+/* ─── Enregistrer ───────────────────────────────────────────────────── */
+async function saveSlide() {
+  const s = slides.find(x => x.id === currentId);
+  if (!s) return;
+
+  // Demander le nom de la liste si elle n'est pas encore nommee
+  if (!getListName(currentListId)) {
+    const nom = prompt('Donnez un nom a cette liste de questions :');
+    if (nom === null) return;
+    const trimmed = nom.trim();
+    if (!trimmed) { toast('Le nom ne peut pas etre vide.', '#CC0000'); return; }
+    const lists = getQLists();
+    const idx   = lists.findIndex(l => l.id === currentListId);
+    if (idx >= 0) { lists[idx].name = trimmed; saveQLists(lists); }
+    updateListHeader();
+  }
+
+  if (s.type === 'C') {
+    await saveCandidatsSlide(s);
+  } else if (s.type === 'L') {
+    collectMenuListData(s);
+    pendingMedia = null;
+  } else {
+    (FIELDS[s.type] || []).forEach(f => {
+      const el = document.getElementById('f-' + f.id);
+      if (!el) return;
+      if (f.type === 'checkbox') s[f.id] = el.checked;
+      else s[f.id] = el.value.trim();
+    });
+    if (pendingMedia?.remove) {
+      if (s.mediaName) await BQ_DB.delMedia(s.mediaName).catch(() => {});
+      s.mediaName = '';
+      s.mediaType = '';
+    } else if (pendingMedia?.blob) {
+      await BQ_DB.putMedia(pendingMedia.name, pendingMedia.blob);
+      s.mediaName = pendingMedia.name;
+      s.mediaType = pendingMedia.mediaType;
+    }
+    pendingMedia = null;
+  }
+
+  await BQ_DB.putSlide(s);
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  renderList();
+  toast('Slide enregistre ✓', '#059669');
+}
+
+/* ─── Ajouter / Supprimer / Dupliquer ──────────────────────────────── */
+async function addSlide() {
+  const s = { id: BQ_DB.uuid(), type: 'N', order: slides.length, listId: currentListId };
+  await BQ_DB.putSlide(s);
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  renderList();
+  selectSlide(s.id);
+}
+
+async function deleteSlide() {
+  if (!currentId || !confirm('Supprimer ce slide ?')) return;
+  await deleteSlideById(currentId);
+  clearEditor();
+}
+
+async function deleteSlideById(id) {
+  await BQ_DB.delSlide(id);
+  if (currentId === id) clearEditor();
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  slides.forEach((s, i) => s.order = i);
+  await Promise.all(slides.map(s => BQ_DB.putSlide(s)));
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  renderList();
+}
+
+async function duplicateSlide() {
+  const s = slides.find(x => x.id === currentId);
+  if (!s) return;
+  const copy = { ...JSON.parse(JSON.stringify(s)), id: BQ_DB.uuid(), order: slides.length, listId: currentListId };
+  await BQ_DB.putSlide(copy);
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  renderList();
+  selectSlide(copy.id);
+  toast('Slide duplique ✓', '#2563eb');
+}
+
+/* ─── Import / Export ───────────────────────────────────────────────── */
+async function doExport() {
+  toast('Préparation de l\'export (médias inclus)…', '#2563eb');
+  try {
+    const allSlides  = await BQ_DB.getSlides();
+    const mediaKeys  = await BQ_DB.getAllMediaKeys();
+    const mediaExport = [];
+    for (const name of mediaKeys) {
+      try {
+        const rec = await BQ_DB.getMedia(name);
+        if (rec?.blob) {
+          const data = await blobToBase64(rec.blob);
+          mediaExport.push({ name, type: rec.blob.type, data });
+        }
+      } catch (_) {}
+    }
+    const exportData = {
+      version:       2,
+      exportedAt:    new Date().toISOString(),
+      qLists:        getQLists(),
+      activeQListId: getActiveListId() || '',
+      bdmLists:      loadBDMData(),
+      activeBdmId:   getActiveBDMId()  || '',
+      slides:        allSlides,
+      media:         mediaExport
+    };
+    const a = Object.assign(document.createElement('a'), {
+      href:     URL.createObjectURL(new Blob([JSON.stringify(exportData)], { type: 'application/json' })),
+      download: `burger-quiz-backup-${new Date().toISOString().slice(0,10)}.json`
+    });
+    a.click();
+    toast('Export complet ✓ (' + mediaExport.length + ' médias inclus)', '#059669');
+  } catch (err) {
+    toast('Erreur export : ' + err.message, '#CC0000');
+  }
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function base64ToFile(dataUrl, name, type) {
+  const [, b64] = dataUrl.split(',');
+  const bytes   = atob(b64);
+  const ab      = new ArrayBuffer(bytes.length);
+  const ia      = new Uint8Array(ab);
+  for (let i = 0; i < bytes.length; i++) ia[i] = bytes.charCodeAt(i);
+  return new File([ab], name, { type: type || 'application/octet-stream' });
+}
+
+function doImport() {
+  const menu = document.createElement('div');
+  menu.style.cssText = 'position:fixed;top:60px;right:200px;background:#222;border:1px solid #444;border-radius:8px;padding:8px;z-index:999';
+  menu.innerHTML = `
+    <button onclick="document.getElementById('importJSON').click();this.parentNode.remove()" class="btn btn-gray" style="display:block;width:100%;margin-bottom:6px">📄 Importer JSON</button>
+    <button onclick="document.getElementById('importCSV').click();this.parentNode.remove()"  class="btn btn-gray" style="display:block;width:100%">📊 Importer CSV (ancien format)</button>`;
+  document.body.appendChild(menu);
+  setTimeout(() => { if (menu.parentNode) menu.remove(); }, 4000);
+}
+
+async function handleImportJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  let data;
+  try { data = JSON.parse(await file.text()); }
+  catch (_) { toast('JSON invalide', '#CC0000'); input.value = ''; return; }
+
+  // ── Ancien format : tableau de slides ──────────────────────────────
+  if (Array.isArray(data)) {
+    if (!confirm('Remplacer les questions de la liste actuelle ?')) { input.value = ''; return; }
+    const allSlides = await BQ_DB.getSlides();
+    for (const s of allSlides.filter(s => s.listId === currentListId)) await BQ_DB.delSlide(s.id);
+    for (let i = 0; i < data.length; i++) {
+      data[i].listId = currentListId;
+      data[i].order  = i;
+      await BQ_DB.putSlide(data[i]);
+    }
+    slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+    clearEditor(); renderList();
+    input.value = '';
+    toast('Import réussi — ' + slides.length + ' slides', '#059669');
+    return;
+  }
+
+  // ── Nouveau format complet (version 2) ─────────────────────────────
+  if (!confirm('Restaurer la sauvegarde complète ?\nToutes les données actuelles seront remplacées.')) {
+    input.value = ''; return;
+  }
+  toast('Restauration en cours…', '#2563eb');
+  try {
+    // 1. Médias
+    for (const m of (data.media || [])) {
+      try { await BQ_DB.putMedia(m.name, base64ToFile(m.data, m.name, m.type)); } catch (_) {}
+    }
+    // 2. Slides
+    const existing = await BQ_DB.getSlides();
+    for (const s of existing) await BQ_DB.delSlide(s.id);
+    for (const s of (data.slides || [])) await BQ_DB.putSlide(s);
+    // 3. Métadonnées localStorage
+    if (data.qLists?.length)   saveQLists(data.qLists);
+    if (data.activeQListId)    setActiveListId(data.activeQListId);
+    if (data.bdmLists?.length) saveBDMData(data.bdmLists);
+    if (data.activeBdmId)      setActiveBDMId(data.activeBdmId);
+    // 4. Recharger l'UI
+    currentListId = getActiveListId() || (getQLists()[0]?.id ?? null);
+    clearEditor();
+    await loadAll();
+    input.value = '';
+    toast('Restauration réussie ✓ (' + (data.media?.length || 0) + ' médias restaurés)', '#059669');
+  } catch (err) {
+    toast('Erreur import : ' + err.message, '#CC0000');
+    input.value = '';
+  }
+}
+
+async function handleImportCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!confirm('Remplacer les questions de la liste actuelle ?')) return;
+  const allSlides = await BQ_DB.getSlides();
+  for (const s of allSlides.filter(s => s.listId === currentListId)) await BQ_DB.delSlide(s.id);
+  const newSlides = BQ_DB.importCSV(await file.text());
+  for (let i = 0; i < newSlides.length; i++) {
+    newSlides[i].listId = currentListId;
+    newSlides[i].order  = i;
+    await BQ_DB.putSlide(newSlides[i]);
+  }
+  slides = (await BQ_DB.getSlides()).filter(s => s.listId === currentListId);
+  clearEditor();
+  renderList();
+  input.value = '';
+  toast('Import CSV reussi — ' + slides.length + ' slides', '#059669');
+}
+
+/* ─── Bibliothèque de médias ────────────────────────────────────────── */
+async function openMediaLibrary() {
+  const keys  = await BQ_DB.getAllMediaKeys();
+  const grid  = document.getElementById('media-grid');
+  grid.innerHTML = '';
+  if (!keys.length) {
+    grid.innerHTML = '<p style="color:#666;padding:20px 0">Aucun média uploadé pour l\'instant.</p>';
+  } else {
+    for (const name of keys) {
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      const card = document.createElement('div');
+      card.className = 'media-card';
+      const isImg   = ['jpg','jpeg','png','gif','webp'].includes(ext);
+      const isVid   = ['mp4','webm'].includes(ext);
+      card.innerHTML = `
+        ${isImg ? `<img data-name="${escAttr(name)}" src="">` :
+          isVid  ? `<video data-name="${escAttr(name)}" src="" muted></video>` :
+                   `<div style="width:120px;height:80px;line-height:80px;text-align:center;background:#111;border-radius:4px;font-size:28px">${ext === 'pdf' ? '📄' : ext === 'mp3' ? '🎵' : '📎'}</div>`}
+        <div class="mc-name">${escHtml(name)}</div>
+        <button onclick="libDelete('${escAttr(name)}')">🗑 Supprimer</button>`;
+      grid.appendChild(card);
+      // Lazy-load preview
+      BQ_DB.mediaURL(name).then(url => {
+        if (!url) return;
+        const el = card.querySelector('[data-name]');
+        if (el) el.src = url;
+      });
+    }
+  }
+  document.getElementById('media-modal').style.display = 'block';
+}
+
+async function libDelete(name) {
+  if (!confirm(`Supprimer le fichier "${name}" ?`)) return;
+  await BQ_DB.delMedia(name);
+  toast('Fichier supprimé', '#CC0000');
+  openMediaLibrary();
+}
+
+/* ─── Utilitaires ───────────────────────────────────────────────────── */
+function toast(msg, color = '#059669') {
+  const t = Object.assign(document.createElement('div'), { textContent: msg });
+  Object.assign(t.style, {
+    position:'fixed', bottom:'24px', right:'24px', background: color,
+    color:'#fff', padding:'10px 20px', borderRadius:'8px',
+    fontWeight:'bold', zIndex:'9999', fontSize:'14px'
+  });
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) {
+  return String(s).replace(/"/g,'&quot;');
+}
+
+/* ─── Gestion des listes BDM ────────────────────────────────────────── */
+let bdmLists     = [];
+let currentBDMId = null;
+
+function loadBDMData()   { try { return JSON.parse(localStorage.bq_bdm_lists || '[]'); } catch(_) { return []; } }
+function saveBDMData(l)  { localStorage.bq_bdm_lists = JSON.stringify(l); }
+function getActiveBDMId(){ return localStorage.bq_active_bdm || null; }
+function setActiveBDMId(id){ localStorage.bq_active_bdm = id; }
+
+function openBDMPanel() {
+  bdmLists = loadBDMData();
+  currentBDMId = null;
+  renderBDMListPanel();
+  showBDMEmptyState();
+  document.getElementById('bdm-modal').style.display = 'block';
+}
+
+function renderBDMListPanel() {
+  const activeId = getActiveBDMId();
+  const ul = document.getElementById('bdm-lists-ul');
+  ul.innerHTML = '';
+  bdmLists.forEach(l => {
+    const count = (l.questions || []).filter(q => (q.text || '').trim()).length;
+    const isActive = l.id === activeId;
+    const div = document.createElement('div');
+    div.className = 'bdm-list-item' + (l.id === currentBDMId ? ' active' : '');
+    div.innerHTML = `
+      <span class="bdm-star">${isActive ? '⭐' : ''}</span>
+      <span class="bdm-li-name">${escHtml(l.name || 'Sans nom')}</span>
+      <span class="bdm-li-count">${count}/10</span>`;
+    div.onclick = () => selectBDMList(l.id);
+    ul.appendChild(div);
+  });
+}
+
+function showBDMEmptyState() {
+  document.getElementById('bdm-editor').innerHTML = `
+    <div class="empty-state">
+      <div class="icon">💀</div>
+      <p>Selectionnez une liste ou creez-en une nouvelle</p>
+    </div>`;
+}
+
+function newBDMList() {
+  const id   = BQ_DB.uuid();
+  const list = { id, name: 'Nouvelle liste', questions: Array.from({length:10}, () => ({text:''})) };
+  bdmLists.push(list);
+  saveBDMData(bdmLists);
+  selectBDMList(id);
+}
+
+function selectBDMList(id) {
+  currentBDMId = id;
+  renderBDMListPanel();
+  const list = bdmLists.find(l => l.id === id);
+  if (list) renderBDMEditor(list);
+}
+
+function renderBDMEditor(list) {
+  const activeId  = getActiveBDMId();
+  const isActive  = list.id === activeId;
+  const filled    = (list.questions || []).filter(q => (q.text || '').trim()).length;
+  const editor    = document.getElementById('bdm-editor');
+  editor.innerHTML = `
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Nom de la liste</label>
+      <input type="text" id="bdm-name-field" value="${escAttr(list.name || '')}" placeholder="Ex: Soiree famille, Questions difficiles…">
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:24px;align-items:center">
+      <button class="btn ${isActive ? 'btn-green' : 'btn-redlight'}" onclick="activateBDMList()">
+        ${isActive ? '✓ Liste active' : '⭐ Activer pour le jeu'}
+      </button>
+      <button class="btn btn-red" onclick="deleteBDMList()">🗑 Supprimer</button>
+      <span style="color:#555;font-size:13px;margin-left:auto">${filled}/10 questions</span>
+    </div>
+    <div class="section-title" style="margin-bottom:14px;color:#CC0000">Questions</div>
+    <div id="bdm-questions-form">
+      ${(list.questions || []).map((q, i) => `
+        <div class="bdm-q-row">
+          <div class="bdm-q-num">${i + 1}</div>
+          <input type="text" id="bdm-q-${i}"
+                 value="${escAttr(q.text || '')}"
+                 placeholder="Question ${i + 1}…">
+        </div>`).join('')}
+    </div>
+    <div class="save-bar">
+      <button class="btn btn-yellow" onclick="saveBDMList()">💾 Enregistrer</button>
+    </div>`;
+}
+
+function collectBDMFormData() {
+  const list = bdmLists.find(l => l.id === currentBDMId);
+  if (!list) return null;
+  list.name      = (document.getElementById('bdm-name-field')?.value || '').trim() || 'Sans nom';
+  list.questions = list.questions.map((q, i) => ({
+    text: (document.getElementById('bdm-q-' + i)?.value || '').trim()
+  }));
+  return list;
+}
+
+function saveBDMList() {
+  const list = collectBDMFormData();
+  if (!list) return;
+  saveBDMData(bdmLists);
+  renderBDMListPanel();
+  toast('Liste enregistree ✓', '#059669');
+}
+
+function activateBDMList() {
+  const list = collectBDMFormData();
+  if (!list) return;
+  saveBDMData(bdmLists);
+  setActiveBDMId(currentBDMId);
+  renderBDMListPanel();
+  renderBDMEditor(list);
+  toast('Liste activee pour le jeu ✓', '#CC0000');
+}
+
+function deleteBDMList() {
+  if (!confirm('Supprimer cette liste ?')) return;
+  bdmLists = bdmLists.filter(l => l.id !== currentBDMId);
+  saveBDMData(bdmLists);
+  if (getActiveBDMId() === currentBDMId) delete localStorage.bq_active_bdm;
+  currentBDMId = null;
+  renderBDMListPanel();
+  showBDMEmptyState();
+}
+
+// Close modals on backdrop click
+['media-modal','settings-modal','bdm-modal','qlists-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+  });
+});
+
+/* ─── Paramètres ────────────────────────────────────────────────────── */
+const BDM_KEY     = '__bdm_music__';
+const VICTORY_KEY = '__victory_music__';
+let bdmPreviewURL     = null;
+let victoryPreviewURL = null;
+
+async function openSettings() {
+  await loadBDMInfo();
+  await loadVictoryMusicInfo();
+  await loadGeneriqueInfo();
+  loadRetourCalmeConfig();
+  document.getElementById('settings-modal').style.display = 'block';
+}
+
+async function loadBDMInfo() {
+  const info = document.getElementById('bdm-music-info');
+  const rec  = await BQ_DB.getMedia(BDM_KEY);
+  if (!rec?.blob) {
+    info.innerHTML = '<p style="color:#555;font-size:13px">Aucune musique configurée.</p>';
+    return;
+  }
+  if (bdmPreviewURL) URL.revokeObjectURL(bdmPreviewURL);
+  bdmPreviewURL = URL.createObjectURL(rec.blob);
+  info.innerHTML = `
+    <div class="media-name">
+      ${escHtml(rec.blob.name || BDM_KEY)}
+      <button class="media-remove" onclick="deleteBDMMusic()">✕ Supprimer</button>
+    </div>
+    <audio controls src="${bdmPreviewURL}" style="width:100%;margin-top:8px"></audio>`;
+}
+
+function handleBDMDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadBDMMusic(file);
+}
+
+async function uploadBDMMusic(file) {
+  if (!file) return;
+  // Stocker le fichier avec son nom original dans la propriété blob
+  const namedBlob = new File([file], file.name, { type: file.type });
+  await BQ_DB.putMedia(BDM_KEY, namedBlob);
+  await loadBDMInfo();
+  toast('Musique Burger de la Mort enregistrée ✓', '#059669');
+}
+
+async function deleteBDMMusic() {
+  if (!confirm('Supprimer la musique de fond ?')) return;
+  await BQ_DB.delMedia(BDM_KEY);
+  await loadBDMInfo();
+  toast('Musique supprimée', '#CC0000');
+}
+
+async function loadVictoryMusicInfo() {
+  const info = document.getElementById('victory-music-info');
+  if (!info) return;
+  const rec = await BQ_DB.getMedia(VICTORY_KEY);
+  if (!rec?.blob) {
+    info.innerHTML = '<p style="color:#555;font-size:13px">Aucune musique configurée.</p>';
+    return;
+  }
+  if (victoryPreviewURL) URL.revokeObjectURL(victoryPreviewURL);
+  victoryPreviewURL = URL.createObjectURL(rec.blob);
+  info.innerHTML = `
+    <div class="media-name">
+      ${escHtml(rec.blob.name || VICTORY_KEY)}
+      <button class="media-remove" onclick="deleteVictoryMusic()">✕ Supprimer</button>
+    </div>
+    <audio controls src="${victoryPreviewURL}" style="width:100%;margin-top:8px"></audio>`;
+}
+
+function handleVictoryDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadVictoryMusic(file);
+}
+
+async function uploadVictoryMusic(file) {
+  if (!file) return;
+  const namedBlob = new File([file], file.name, { type: file.type });
+  await BQ_DB.putMedia(VICTORY_KEY, namedBlob);
+  await loadVictoryMusicInfo();
+  toast('Musique de victoire enregistrée ✓', '#059669');
+}
+
+async function deleteVictoryMusic() {
+  if (!confirm('Supprimer la musique de victoire ?')) return;
+  await BQ_DB.delMedia(VICTORY_KEY);
+  await loadVictoryMusicInfo();
+  toast('Musique supprimée', '#CC0000');
+}
+
+/* ─── Générique de fin ──────────────────────────────────────────────── */
+const GENERIQUE_KEY = '__generique_fin__';
+let generiquePreviewURL = null;
+
+async function loadGeneriqueInfo() {
+  const info = document.getElementById('generique-info');
+  if (!info) return;
+  const rec = await BQ_DB.getMedia(GENERIQUE_KEY);
+  if (!rec?.blob) {
+    info.innerHTML = '<p style="color:#555;font-size:13px">Aucune vidéo configurée.</p>';
+    return;
+  }
+  if (generiquePreviewURL) URL.revokeObjectURL(generiquePreviewURL);
+  generiquePreviewURL = URL.createObjectURL(rec.blob);
+  info.innerHTML = `
+    <div class="media-name">
+      ${escHtml(rec.blob.name || GENERIQUE_KEY)}
+      <button class="media-remove" onclick="deleteGenerique()">✕ Supprimer</button>
+    </div>
+    <video controls src="${generiquePreviewURL}" style="width:100%;max-height:160px;margin-top:8px;border-radius:6px"></video>`;
+}
+
+function handleGeneriqueDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadGenerique(file);
+}
+
+async function uploadGenerique(file) {
+  if (!file) return;
+  const namedBlob = new File([file], file.name, { type: file.type });
+  await BQ_DB.putMedia(GENERIQUE_KEY, namedBlob);
+  await loadGeneriqueInfo();
+  toast('Générique de fin enregistré ✓', '#059669');
+}
+
+async function deleteGenerique() {
+  if (!confirm('Supprimer le générique de fin ?')) return;
+  await BQ_DB.delMedia(GENERIQUE_KEY);
+  await loadGeneriqueInfo();
+  toast('Générique supprimé', '#CC0000');
+}
+
+/* ─── Retour au calme ───────────────────────────────────────────────── */
+function loadRetourCalmeConfig() {
+  let cfg = {};
+  try { cfg = JSON.parse(localStorage.bq_retour_calme || '{}'); } catch (_) {}
+  const titreEl = document.getElementById('rc-titre');
+  const msgEl   = document.getElementById('rc-message');
+  if (titreEl) titreEl.value = cfg.titre   || '';
+  if (msgEl)   msgEl.value   = cfg.message || '';
+}
+
+function saveRetourCalme() {
+  const titre   = (document.getElementById('rc-titre')?.value   || '').trim();
+  const message = (document.getElementById('rc-message')?.value || '').trim();
+  localStorage.bq_retour_calme = JSON.stringify({ titre, message });
+  toast('Retour au calme enregistré ✓', '#059669');
+}
+
+loadAll();
+
+// Firefox + file:// = donnees non partagees entre pages
+(function() {
+  var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  var isFile    = location.protocol === 'file:';
+  if (!isFirefox || !isFile) return;
+  var b = document.createElement('div');
+  b.style.cssText = 'position:fixed;bottom:60px;left:0;right:0;z-index:9998;background:#1a0000;border-top:3px solid #CC0000;border-bottom:3px solid #CC0000;padding:14px 20px;font-family:Arial,sans-serif;font-size:13px;color:#ddd;display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+  b.innerHTML = '<span style="color:#CC0000;font-weight:bold;font-size:15px">&#9888; Firefox + fichier local</span>'
+    + '<span style="flex:1">Les donnees creees ici ne seront pas visibles dans le jeu sur Firefox. '
+    + 'Lancez <strong>Lancer_BurgerQuiz.bat</strong> pour utiliser le serveur local '
+    + '(ou Firefox : <code style="color:#EDD400">about:config</code> &rarr; '
+    + '<code style="color:#EDD400">security.fileuri.strict_origin_policy</code> &rarr; <strong>false</strong>).</span>'
+    + '<button onclick="this.parentNode.remove()" style="background:#333;border:none;color:#aaa;padding:6px 12px;border-radius:4px;cursor:pointer">&#10005;</button>';
+  document.body.appendChild(b);
+})();
+</script>
+</body>
+</html>

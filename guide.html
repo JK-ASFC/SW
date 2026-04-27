@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide d'utilisation — Burger Quiz</title>
+  <style>
+    @font-face { font-family:"BQ"; src:url("horse.woff2") format("woff2"),url("horse.woff") format("woff"); }
+    @font-face { font-family:"AV"; src:url("Avenir-Black.ttf") format("truetype"); }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      background:#0d0d0d;
+      color:#ddd;
+      font-family: 'AV', Arial, sans-serif;
+      line-height:1.7;
+    }
+
+    /* ─── Header ─── */
+    header{
+      position:sticky; top:0; z-index:100;
+      background:#000;
+      border-bottom:3px solid #EDD400;
+      display:flex; align-items:center; gap:16px;
+      padding:12px 32px;
+    }
+    header img{ height:40px; }
+    header h1{
+      font-family:'AV', Arial, sans-serif;
+      font-size:22px;
+      color:#EDD400;
+      letter-spacing:4px;
+      text-transform:uppercase;
+      flex:1;
+    }
+    header h1 span{ color:#CC0000; }
+    .credit{
+      font-family:'AV',sans-serif;
+      font-size:11px;
+      color:#444;
+      letter-spacing:3px;
+      text-transform:uppercase;
+    }
+
+    /* ─── Layout ─── */
+    .container{
+      display:flex;
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 24px 80px;
+    }
+
+    /* ─── Sidebar nav ─── */
+    nav{
+      width:230px;
+      flex-shrink:0;
+      padding:32px 16px 32px 0;
+      position:sticky;
+      top:72px;
+      align-self:flex-start;
+      max-height:calc(100vh - 80px);
+      overflow-y:auto;
+    }
+    nav a{
+      display:block;
+      padding:6px 12px;
+      margin-bottom:3px;
+      color:#666;
+      text-decoration:none;
+      font-size:12px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      border-left:2px solid transparent;
+      transition:all .15s;
+    }
+    nav a:hover{ color:#EDD400; border-color:#EDD400; }
+    nav .nav-section{
+      color:#333;
+      font-size:10px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin:16px 0 6px 12px;
+    }
+
+    /* ─── Content ─── */
+    .content{
+      flex:1;
+      min-width:0;
+      padding:40px 0 0 40px;
+      border-left:1px solid #1e1e1e;
+    }
+
+    /* ─── Sections ─── */
+    section{ margin-bottom:60px; }
+    section:target > h2{ color:#EDD400; }
+
+    h2{
+      font-family:'AV', Arial, sans-serif;
+      font-size:32px;
+      color:#fff;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      border-bottom:2px solid #1e1e1e;
+      padding-bottom:12px;
+      margin-bottom:24px;
+      transition:color .2s;
+    }
+    h3{
+      font-family:'AV', Arial, sans-serif;
+      font-size:18px;
+      color:#EDD400;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin:28px 0 12px;
+    }
+    h4{
+      font-size:14px;
+      color:#aaa;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin:20px 0 8px;
+    }
+
+    p{ margin-bottom:12px; color:#bbb; font-size:15px; }
+    ul, ol{ margin:0 0 12px 24px; }
+    li{ color:#bbb; font-size:15px; margin-bottom:5px; }
+    strong{ color:#eee; }
+
+    /* ─── Callout boxes ─── */
+    .callout{
+      border-radius:10px;
+      padding:16px 20px;
+      margin:16px 0;
+      font-size:14px;
+      display:flex; gap:14px; align-items:flex-start;
+    }
+    .callout-icon{ font-size:22px; flex-shrink:0; line-height:1.3; }
+    .callout-body{ flex:1; }
+    .callout-body strong{ display:block; margin-bottom:4px; }
+    .callout.warn{ background:#1a1200; border-left:3px solid #EDD400; }
+    .callout.info{ background:#001020; border-left:3px solid #0891b2; }
+    .callout.tip { background:#001a00; border-left:3px solid #059669; }
+    .callout.danger{ background:#1a0000; border-left:3px solid #CC0000; }
+
+    /* ─── Code blocks ─── */
+    code{
+      background:#1a1a1a;
+      border:1px solid #2a2a2a;
+      border-radius:4px;
+      padding:2px 7px;
+      font-family:'Courier New',monospace;
+      font-size:13px;
+      color:#EDD400;
+    }
+    pre{
+      background:#111;
+      border:1px solid #222;
+      border-radius:8px;
+      padding:16px 20px;
+      overflow-x:auto;
+      margin:12px 0;
+    }
+    pre code{
+      background:none;
+      border:none;
+      padding:0;
+      font-size:13px;
+      color:#EDD400;
+    }
+
+    /* ─── Keyboard keys ─── */
+    kbd{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:32px; height:28px;
+      padding:0 8px;
+      background:#1e1e1e;
+      border:1px solid #444;
+      border-bottom:3px solid #333;
+      border-radius:5px;
+      font-family:'Courier New',monospace;
+      font-size:12px;
+      font-weight:bold;
+      color:#eee;
+      white-space:nowrap;
+    }
+
+    /* ─── Key table ─── */
+    .key-table{ width:100%; border-collapse:collapse; margin:12px 0; }
+    .key-table th{
+      text-align:left;
+      font-size:11px;
+      color:#555;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      padding:6px 12px;
+      border-bottom:1px solid #1e1e1e;
+    }
+    .key-table td{
+      padding:9px 12px;
+      border-bottom:1px solid #111;
+      font-size:14px;
+      color:#bbb;
+      vertical-align:middle;
+    }
+    .key-table td:first-child{ white-space:nowrap; }
+    .key-table tr:hover td{ background:#111; }
+
+    /* ─── Type badges ─── */
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:bold;
+      color:#fff;
+      vertical-align:middle;
+    }
+    .tV{background:#7c3aed}.tN{background:#d97706}.tS{background:#0891b2}
+    .tI{background:#059669}.tM{background:#2563eb}.tL{background:#4f46e5}
+    .tA{background:#db2777}.tB{background:#dc2626}
+    .tC{background:#0d9488}.tG{background:#b45309}.tT{background:#9333ea}
+
+    /* ─── Flow diagram ─── */
+    .flow{
+      display:flex; flex-wrap:wrap; gap:0;
+      align-items:center;
+      margin:16px 0;
+    }
+    .flow-step{
+      background:#1a1a1a;
+      border:1px solid #2a2a2a;
+      border-radius:8px;
+      padding:10px 16px;
+      font-size:13px;
+      color:#ccc;
+      text-align:center;
+    }
+    .flow-arrow{
+      color:#555;
+      font-size:20px;
+      padding:0 8px;
+    }
+
+    /* ─── Score bar visual ─── */
+    .score-example{
+      display:flex; gap:16px; margin:12px 0;
+      font-family:'BQ',sans-serif;
+    }
+    .score-box{
+      padding:8px 20px;
+      border-radius:6px;
+      font-size:28px;
+    }
+    .score-mayo{ background:#222200; color:#EDD400; border:1px solid #EDD400; }
+    .score-ketchup{ background:#1a0000; color:#CC0000; border:1px solid #CC0000; }
+
+    /* ─── Separator ─── */
+    hr{ border:none; border-top:1px solid #1e1e1e; margin:32px 0; }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar{ width:4px; }
+    ::-webkit-scrollbar-track{ background:#111; }
+    ::-webkit-scrollbar-thumb{ background:#333; border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="img/logo.png" onerror="this.style.display='none'">
+  <h1>BURGER QUIZ <span>— GUIDE</span></h1>
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#1e1e1e;border:1px solid #333;border-radius:7px;color:#aaa;text-decoration:none;font-family:Arial,sans-serif;font-size:13px;letter-spacing:1px;transition:all .15s" onmouseover="this.style.borderColor='#EDD400';this.style.color='#EDD400'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">&#8592; Accueil</a>
+  <span class="credit">Créé par JK</span>
+</header>
+
+<div class="container">
+
+  <!-- Nav sidebar -->
+  <nav>
+    <div class="nav-section">Démarrage</div>
+    <a href="#prerequis">Prérequis</a>
+    <a href="#lancement">Lancement</a>
+
+    <div class="nav-section">Administration</div>
+    <a href="#admin-listes">Listes de slides</a>
+    <a href="#admin-types">Types de slides</a>
+    <a href="#admin-bdm">Burger de la Mort</a>
+    <a href="#admin-parametres">Paramètres</a>
+    <a href="#admin-export">Export / Import</a>
+
+    <div class="nav-section">Jeu</div>
+    <a href="#jeu-clavier">Touches clavier</a>
+    <a href="#jeu-modes">Modes de jeu</a>
+    <a href="#jeu-bdm">Déroulement BDM</a>
+    <a href="#jeu-fin">Fin de soirée</a>
+
+    <div class="nav-section">Infos</div>
+    <a href="#stockage">Stockage</a>
+    <a href="#credits">Crédits</a>
+  </nav>
+
+  <!-- Main content -->
+  <div class="content">
+
+    <!-- ═══ PRÉREQUIS ═══ -->
+    <section id="prerequis">
+      <h2>PRÉREQUIS</h2>
+
+      <p>Burger Quiz est une application web locale. Elle fonctionne dans un navigateur moderne sans installation, mais nécessite un <strong>serveur HTTP local</strong> pour que les fichiers se chargent correctement (vidéos, sons, images).</p>
+
+      <h3>Option 1 — Python (recommandé)</h3>
+      <p>Python est gratuit et disponible sur <strong>python.org</strong>. Une fois installé, ouvrez un terminal dans le dossier du projet et lancez :</p>
+      <pre><code>python -m http.server 8000</code></pre>
+      <p>Puis ouvrez votre navigateur à l'adresse <code>http://localhost:8000</code>.</p>
+
+      <div class="callout tip">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>Raccourci Windows</strong>
+          Double-cliquez sur <code>start_server.bat</code> s'il existe dans le dossier, sinon créez un fichier texte avec <code>python -m http.server 8000 &amp;&amp; pause</code> et renommez-le en <code>start_server.bat</code>.
+        </div>
+      </div>
+
+      <h3>Option 2 — Extension VS Code</h3>
+      <p>Installez l'extension <strong>Live Server</strong> dans Visual Studio Code, puis cliquez sur "Go Live" en bas à droite. Le navigateur s'ouvre automatiquement.</p>
+
+      <h3>Option 3 — XAMPP / WAMP</h3>
+      <p>Placez le dossier du projet dans le répertoire <code>htdocs</code> (XAMPP) ou <code>www</code> (WAMP) et accédez via <code>http://localhost/burger/</code>.</p>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Ne pas ouvrir directement le fichier HTML</strong>
+          Ouvrir <code>index.html</code> en double-cliquant (protocole <code>file://</code>) bloque le chargement des vidéos et des sons à cause des restrictions de sécurité du navigateur.
+        </div>
+      </div>
+
+      <h3>Navigateur compatible</h3>
+      <ul>
+        <li><strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> — recommandés, meilleure compatibilité vidéo</li>
+        <li>Firefox — compatible mais certains formats vidéo peuvent poser problème</li>
+        <li>Safari — compatible mais nécessite des formats MP4 H.264</li>
+      </ul>
+
+      <h3>Formats de médias supportés</h3>
+      <ul>
+        <li><strong>Vidéo</strong> : MP4 (H.264), WebM</li>
+        <li><strong>Audio</strong> : MP3, OGG, WAV, M4A</li>
+        <li><strong>Image</strong> : JPG, PNG, GIF, WebP, SVG</li>
+        <li><strong>Document</strong> : PDF</li>
+      </ul>
+    </section>
+
+    <!-- ═══ LANCEMENT ═══ -->
+    <section id="lancement">
+      <h2>LANCEMENT</h2>
+
+      <p>Une fois le serveur démarré, rendez-vous sur <code>http://localhost:8000</code>. L'écran d'accueil propose trois destinations :</p>
+
+      <div class="flow">
+        <div class="flow-step">⚙ Admin<br><small>Préparer le quiz</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">▶ Jouer<br><small>Choisir une liste</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">🎮 Jeu<br><small>Animer la soirée</small></div>
+      </div>
+
+      <div class="callout info">
+        <div class="callout-icon">ℹ️</div>
+        <div class="callout-body">
+          <strong>Workflow recommandé</strong>
+          Préparez vos slides en Admin, exportez-les en JSON pour les sauvegarder, puis lancez le jeu le soir de l'émission.
+        </div>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- ═══ ADMIN — LISTES ═══ -->
+    <section id="admin-listes">
+      <h2>ADMIN — LISTES</h2>
+
+      <p>L'interface d'administration est accessible via le bouton <strong>Admin</strong> de l'accueil ou en appuyant sur <kbd>A</kbd> pendant le jeu.</p>
+
+      <h3>Gestion des listes</h3>
+      <p>Le bouton <strong>Liste</strong> en haut permet de gérer plusieurs listes de questions indépendantes (ex : "Saison 1", "Spécial Noël"). Chaque liste a son propre ensemble de slides.</p>
+      <ul>
+        <li>Cliquer sur le widget <em>Liste ▾</em> pour ouvrir le panneau de gestion</li>
+        <li><strong>+ Liste</strong> — créer une nouvelle liste vide</li>
+        <li>Cliquer sur une liste pour la rendre active (étoile ★)</li>
+        <li>Modifier le nom directement dans le champ</li>
+        <li>Supprimer une liste avec le bouton ✕ (les slides restent dans la base)</li>
+      </ul>
+
+      <h3>Gestion des slides</h3>
+      <ul>
+        <li><strong>+ Nouveau slide</strong> — ajoute un slide à la liste active</li>
+        <li>Cliquer sur un slide dans la liste de gauche pour l'éditer</li>
+        <li>Glisser-déposer pour réordonner les slides</li>
+        <li>Bouton ✕ rouge sur chaque slide pour le supprimer</li>
+        <li>Les modifications sont sauvegardées automatiquement à chaque changement de champ</li>
+      </ul>
+
+      <h3>Bibliothèque de médias</h3>
+      <p>Le bouton <strong>🖼 Médias</strong> ouvre la galerie de tous les fichiers stockés (images, vidéos, audio). Vous pouvez y supprimer des médias inutilisés.</p>
+    </section>
+
+    <!-- ═══ ADMIN — TYPES ═══ -->
+    <section id="admin-types">
+      <h2>ADMIN — TYPES DE SLIDES</h2>
+
+      <p>Chaque slide a un type qui détermine son affichage et son comportement pendant le jeu.</p>
+
+      <table class="key-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Nom</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge tV">🎬 V</span></td>
+            <td><strong>Vidéo</strong></td>
+            <td>Lecture d'une vidéo en plein écran. Utile pour le générique d'intro ou des extraits.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tN">🍟 N</span></td>
+            <td><strong>Nuggets</strong></td>
+            <td>Question à choix multiple (4 réponses A/B/C/D). La bonne réponse est révélée avec <kbd>Espace</kbd>.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tS">🧂 S</span></td>
+            <td><strong>Sel ou Poivre</strong></td>
+            <td>Question vrai/faux. SEL = vrai, POIVRE = faux.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tI">🖼️ I</span></td>
+            <td><strong>Image</strong></td>
+            <td>Affiche une image avec titre et question optionnels.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tM">🍔 M</span></td>
+            <td><strong>Menu</strong></td>
+            <td>Question avec sous-questions (sous-menu déroulant). Navigation dans les sous-questions avec ← →.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tL">📋 L</span></td>
+            <td><strong>Liste menus</strong></td>
+            <td>Liste de 3 menus à sélectionner. Chaque menu peut être joué indépendamment.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tA">➕ A</span></td>
+            <td><strong>Addition</strong></td>
+            <td>Round addition — affiche des éléments à additionner.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tB">💀 B</span></td>
+            <td><strong>Burger Mort</strong></td>
+            <td>Slide spécial qui déclenche le Burger de la Mort. Contient la vidéo d'intro BDM.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tC">👥 C</span></td>
+            <td><strong>Candidats</strong></td>
+            <td>Présentation des deux candidats (nom, photo, description). Révélation en deux temps avec <kbd>Espace</kbd>.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tG">🎁 G</span></td>
+            <td><strong>Cadeau</strong></td>
+            <td>Slide de révélation du cadeau BDM. Affiché automatiquement si l'équipe réussit le BDM.</td>
+          </tr>
+          <tr>
+            <td><span class="badge tT">🎲 T</span></td>
+            <td><strong>Toss</strong></td>
+            <td>Tirage au sort / duel entre deux candidats. <kbd>Espace</kbd> révèle le gagnant.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Attacher un média à un slide</h4>
+      <p>La plupart des types acceptent un média (image, vidéo, audio, PDF). Glissez-déposez le fichier dans la zone pointillée ou cliquez pour parcourir. Le fichier est <strong>stocké dans le navigateur</strong> (IndexedDB) — aucun serveur de fichiers nécessaire.</p>
+    </section>
+
+    <!-- ═══ ADMIN — BDM ═══ -->
+    <section id="admin-bdm">
+      <h2>ADMIN — BURGER DE LA MORT</h2>
+
+      <p>Le <strong>Burger de la Mort</strong> est un défi optionnel en fin d'émission. Le bouton <strong>💀 Listes BDM</strong> ouvre le gestionnaire.</p>
+
+      <h3>Créer une liste BDM</h3>
+      <ul>
+        <li>Cliquer <strong>+ Nouvelle liste</strong></li>
+        <li>Nommer la liste (ex : "Liste A", "Spéciale")</li>
+        <li>Saisir jusqu'à 10 questions dans les champs numérotés</li>
+        <li>Cliquer <strong>★ Définir active</strong> pour choisir la liste qui sera utilisée au prochain BDM</li>
+      </ul>
+
+      <div class="callout tip">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>Conseil</strong>
+          Préparez 2–3 listes à l'avance. Si une équipe échoue, vous pouvez basculer sur une autre liste pour l'équipe adverse sans rejouer les mêmes questions.
+        </div>
+      </div>
+
+      <h3>Slide déclencheur</h3>
+      <p>Créez un slide de type <span class="badge tB">💀 B</span> dans votre liste principale. Il contient la vidéo d'intro du BDM. Quand ce slide apparaît pendant le jeu, l'animateur appuie sur <kbd>→</kbd> pour lancer la vidéo, puis <kbd>→</kbd> à nouveau pour entrer dans les questions.</p>
+    </section>
+
+    <!-- ═══ ADMIN — PARAMÈTRES ═══ -->
+    <section id="admin-parametres">
+      <h2>ADMIN — PARAMÈTRES</h2>
+
+      <p>Le bouton <strong>⚙ Paramètres</strong> permet de configurer les médias globaux de l'émission.</p>
+
+      <table class="key-table">
+        <thead><tr><th>Paramètre</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Musique BDM</strong></td>
+            <td>Musique jouée en boucle pendant les questions du Burger de la Mort.</td>
+          </tr>
+          <tr>
+            <td><strong>Musique de victoire</strong></td>
+            <td>Musique déclenchée quand une équipe atteint 25 points.</td>
+          </tr>
+          <tr>
+            <td><strong>Générique de fin</strong></td>
+            <td>Vidéo diffusée après le BDM réussi (générique façon émission TV).</td>
+          </tr>
+          <tr>
+            <td><strong>Retour au calme</strong></td>
+            <td>Titre et message affichés après le générique sur l'écran de retour au calme (avec sonomètre).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Pour chaque média, glissez-déposez le fichier ou cliquez pour sélectionner. Le fichier est stocké dans la base de données du navigateur.</p>
+    </section>
+
+    <!-- ═══ ADMIN — EXPORT ═══ -->
+    <section id="admin-export">
+      <h2>ADMIN — EXPORT / IMPORT</h2>
+
+      <h3>Exporter</h3>
+      <p>Le bouton <strong>⬇ Exporter</strong> génère un fichier <code>.json</code> contenant :</p>
+      <ul>
+        <li>Tous les slides de toutes les listes</li>
+        <li>Toutes les listes (noms, IDs)</li>
+        <li>Toutes les listes BDM et leurs questions</li>
+        <li>Tous les médias (images, vidéos, sons) encodés en base64</li>
+        <li>Les paramètres (musiques, générique, retour au calme)</li>
+      </ul>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Sauvegardez régulièrement !</strong>
+          Le stockage navigateur peut être effacé si vous videz le cache ou réinitialisez le navigateur. L'export JSON est votre seule sauvegarde externe.
+        </div>
+      </div>
+
+      <h3>Importer</h3>
+      <p>Le bouton <strong>⬆ Importer</strong> restaure un fichier JSON précédemment exporté. Tous les slides, listes et médias sont rechargés. Les données existantes sont <strong>remplacées</strong>.</p>
+
+      <div class="callout danger">
+        <div class="callout-icon">🔴</div>
+        <div class="callout-body">
+          <strong>Attention</strong>
+          L'import écrase les données actuelles. Exportez d'abord si vous souhaitez conserver la session en cours.
+        </div>
+      </div>
+
+      <h3>Import CSV</h3>
+      <p>Il est également possible d'importer une liste de questions au format CSV pour créer rapidement des slides Nuggets en masse.</p>
+    </section>
+
+    <hr>
+
+    <!-- ═══ JEU — CLAVIER ═══ -->
+    <section id="jeu-clavier">
+      <h2>JEU — TOUCHES CLAVIER</h2>
+
+      <p>Le jeu est entièrement contrôlé au clavier. Voici toutes les touches disponibles selon le contexte.</p>
+
+      <h3>Navigation générale</h3>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>→</kbd></td><td>Slide suivant</td></tr>
+          <tr><td><kbd>←</kbd></td><td>Slide précédent</td></tr>
+          <tr><td><kbd>P</kbd></td><td>Rejouer la vidéo du slide courant depuis le début</td></tr>
+          <tr><td><kbd>R</kbd></td><td>Réinitialiser complètement (scores + position)</td></tr>
+          <tr><td><kbd>W</kbd></td><td>Retourner à l'accueil</td></tr>
+          <tr><td><kbd>A</kbd></td><td>Ouvrir l'administration (nouvel onglet)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Scores</h3>
+      <div class="score-example">
+        <div class="score-box score-mayo">MAYO</div>
+        <div class="score-box score-ketchup">KETCHUP</div>
+      </div>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>M</kbd></td><td>+1 point à l'équipe Mayo</td></tr>
+          <tr><td><kbd>L</kbd></td><td>−1 point à l'équipe Mayo</td></tr>
+          <tr><td><kbd>K</kbd></td><td>+1 point à l'équipe Ketchup</td></tr>
+          <tr><td><kbd>J</kbd></td><td>−1 point à l'équipe Ketchup</td></tr>
+        </tbody>
+      </table>
+      <p>Quand une équipe atteint <strong>25 points</strong>, des confettis se déclenchent et la musique de victoire joue automatiquement pendant 11 secondes.</p>
+
+      <h3>Réponses (slides Nuggets / Sel ou Poivre)</h3>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>1</kbd></td><td>Sélectionner / valider la réponse A</td></tr>
+          <tr><td><kbd>2</kbd></td><td>Sélectionner / valider la réponse B</td></tr>
+          <tr><td><kbd>3</kbd></td><td>Sélectionner / valider la réponse C</td></tr>
+          <tr><td><kbd>4</kbd></td><td>Sélectionner / valider la réponse D</td></tr>
+          <tr><td><kbd>Espace</kbd></td><td>Révéler la bonne réponse</td></tr>
+          <tr><td><kbd>0</kbd></td><td>Effacer la sélection / masquer la réponse</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Mode Menu (slide type Menu)</h3>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Entrer dans le sous-menu 1, 2 ou 3</td></tr>
+          <tr><td><kbd>→</kbd> <kbd>←</kbd></td><td>Naviguer entre les questions du menu</td></tr>
+          <tr><td><kbd>Espace</kbd></td><td>Révéler la réponse de la question</td></tr>
+          <tr><td><kbd>0</kbd></td><td>Masquer la réponse</td></tr>
+          <tr><td><kbd>Échap</kbd></td><td>Quitter le sous-menu, retour au hub</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Burger de la Mort</h3>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>→</kbd></td><td>Question suivante (ou lancer les questions après la vidéo)</td></tr>
+          <tr><td><kbd>←</kbd></td><td>Question précédente (ou retour aux questions depuis le récap)</td></tr>
+          <tr><td><kbd>E</kbd> / <kbd>Échap</kbd></td><td>Quitter le BDM</td></tr>
+          <tr><td><kbd>M</kbd> <kbd>L</kbd> <kbd>K</kbd> <kbd>J</kbd></td><td>Modifier les scores même pendant le BDM</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Générique de fin / Retour au calme</h3>
+      <table class="key-table">
+        <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>→</kbd> / <kbd>Espace</kbd></td><td>Avancer : afficher le retour au calme puis terminer</td></tr>
+          <tr><td><kbd>E</kbd> / <kbd>Échap</kbd></td><td>Quitter directement</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ═══ JEU — MODES ═══ -->
+    <section id="jeu-modes">
+      <h2>JEU — MODES SPÉCIAUX</h2>
+
+      <h3>Mode Candidats</h3>
+      <p>Le slide <span class="badge tC">👥 C</span> affiche les deux candidats en deux temps :</p>
+      <ol>
+        <li>Premier appui <kbd>Espace</kbd> — révèle le premier candidat seul</li>
+        <li>Second appui <kbd>Espace</kbd> — révèle le second candidat</li>
+      </ol>
+
+      <h3>Mode Toss</h3>
+      <p>Le slide <span class="badge tT">🎲 T</span> gère le duel d'entrée. <kbd>Espace</kbd> révèle le résultat du tirage au sort.</p>
+
+      <h3>Mode Victoire à 25 pts</h3>
+      <p>Automatique dès qu'un score atteint 25. Confettis aux couleurs de l'équipe + musique de victoire (11 secondes). Une confirmation apparaît ensuite pour officialiser la victoire.</p>
+    </section>
+
+    <!-- ═══ JEU — BDM ═══ -->
+    <section id="jeu-bdm">
+      <h2>JEU — BURGER DE LA MORT</h2>
+
+      <p>Le Burger de la Mort est le grand défi final. Voici le déroulement complet :</p>
+
+      <div class="flow" style="flex-direction:column;align-items:flex-start;gap:12px;margin:16px 0">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="flow-step" style="min-width:160px">Slide 💀 affiché</div>
+          <div class="flow-arrow">→</div>
+          <span style="color:#888;font-size:13px">Appuyer <kbd>→</kbd> pour lancer la vidéo d'intro BDM</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="flow-step" style="min-width:160px">Vidéo intro BDM</div>
+          <div class="flow-arrow">→</div>
+          <span style="color:#888;font-size:13px">Appuyer <kbd>→</kbd> quand la vidéo est terminée</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="flow-step" style="min-width:160px">10 questions BDM</div>
+          <div class="flow-arrow">→</div>
+          <span style="color:#888;font-size:13px">Navigation ← → entre les questions</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="flow-step" style="min-width:160px">Récapitulatif</div>
+          <div class="flow-arrow">→</div>
+          <span style="color:#888;font-size:13px">Après la dernière question, récap s'affiche automatiquement</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="flow-step" style="min-width:160px">RÉUSSI / ÉCHOUÉ</div>
+          <div class="flow-arrow">→</div>
+          <span style="color:#888;font-size:13px">L'animateur décide du résultat</span>
+        </div>
+      </div>
+
+      <h3>Si RÉUSSI ✅</h3>
+      <ul>
+        <li>Confettis + musique de joie</li>
+        <li>Affichage du slide Cadeau (🎁)</li>
+        <li>Bouton <strong>Autre équipe</strong> : relancer un BDM avec une autre liste pour l'équipe adverse</li>
+        <li>Bouton <strong>Générique de fin</strong> : lancer la vidéo de générique</li>
+        <li>Bouton <strong>Terminer</strong> : fermer la fenêtre BDM</li>
+      </ul>
+
+      <h3>Si ÉCHOUÉ ❌</h3>
+      <ul>
+        <li>Un sélecteur de liste apparaît</li>
+        <li>Choisir une autre liste BDM pour l'équipe adverse</li>
+        <li>Le BDM repart depuis le début avec les nouvelles questions</li>
+      </ul>
+
+      <h3>Générique de fin</h3>
+      <p>La vidéo configurée en paramètres se lance en plein écran. Appuyer <kbd>→</kbd> ou <kbd>Espace</kbd> pour passer en mode <strong>Retour au calme</strong>.</p>
+
+      <h3>Retour au calme (sonomètre)</h3>
+      <p>Écran minimaliste avec un <strong>sonomètre en temps réel</strong> utilisant le micro de l'ordinateur :</p>
+      <ul>
+        <li><span style="color:#00cc50">Vert</span> — niveau correct (≤ 40 dB) : les invités sont calmes</li>
+        <li><span style="color:#EDD400">Orange</span> — légèrement fort (41–60 dB)</li>
+        <li><span style="color:#CC0000">Rouge</span> — trop fort (> 60 dB)</li>
+      </ul>
+      <p>Cliquer sur <strong>Activer le micro</strong> pour démarrer la mesure. Le navigateur demandera l'autorisation d'accès au microphone.</p>
+    </section>
+
+    <!-- ═══ JEU — FIN ═══ -->
+    <section id="jeu-fin">
+      <h2>JEU — FIN DE SOIRÉE</h2>
+
+      <p>Après le générique et le retour au calme, cliquer <strong>Terminer</strong> affiche l'écran de fin :</p>
+
+      <div style="background:#000;border:1px solid #222;border-radius:12px;padding:40px;text-align:center;margin:16px 0">
+        <div style="font-family:'AV',Arial,sans-serif;font-size:36px;color:#EDD400;letter-spacing:4px;text-transform:uppercase">MERCI À TOUS</div>
+        <div style="font-family:'AV',Arial,sans-serif;font-size:16px;color:#666;margin:8px 0;letter-spacing:3px;text-transform:uppercase">pour votre participation</div>
+        <div style="font-family:'AV',Arial,sans-serif;font-size:26px;color:#fff;letter-spacing:4px;text-transform:uppercase">BONNE NUIT !</div>
+      </div>
+
+      <p>Un clic ou n'importe quelle touche ferme cet écran et vous ramène au jeu.</p>
+    </section>
+
+    <hr>
+
+    <!-- ═══ STOCKAGE ═══ -->
+    <section id="stockage">
+      <h2>STOCKAGE</h2>
+
+      <p>Burger Quiz utilise deux mécanismes de stockage navigateur, <strong>sans aucun serveur de base de données</strong> :</p>
+
+      <table class="key-table">
+        <thead><tr><th>Mécanisme</th><th>Ce qui y est stocké</th><th>Limite indicative</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>IndexedDB</strong></td>
+            <td>Slides, médias (images, vidéos, sons) en binaire</td>
+            <td>Plusieurs Go selon navigateur</td>
+          </tr>
+          <tr>
+            <td><strong>LocalStorage</strong></td>
+            <td>Listes, listes BDM, scores, paramètres retour au calme</td>
+            <td>~5 Mo</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>Ces données sont liées au navigateur et au domaine</strong>
+          Vider le cache, changer de navigateur ou accéder depuis une autre machine <em>efface toutes les données</em>. <strong>Exportez régulièrement en JSON.</strong>
+        </div>
+      </div>
+
+      <h3>Libérer de l'espace</h3>
+      <p>Si le navigateur signale un manque d'espace : ouvrez l'admin → <strong>🖼 Médias</strong> → supprimez les fichiers non utilisés.</p>
+    </section>
+
+    <!-- ═══ CRÉDITS ═══ -->
+    <section id="credits">
+      <h2>CRÉDITS</h2>
+
+      <div style="margin:32px 0;text-align:center">
+        <div style="font-family:'AV',Arial,sans-serif;font-size:80px;color:#EDD400;letter-spacing:16px">JK</div>
+        <div style="font-family:'AV',sans-serif;font-size:14px;color:#555;letter-spacing:4px;text-transform:uppercase;margin-top:8px">Conception &amp; Développement</div>
+      </div>
+
+      <div class="callout info" style="max-width:480px;margin:24px auto">
+        <div class="callout-icon">🍔</div>
+        <div class="callout-body">
+          <strong>Burger Quiz — Application locale</strong>
+          Inspiré de l'émission <em>Burger Quiz</em> d'Alain Chabat. Cette application est un outil d'animation privé, non commercial.
+        </div>
+      </div>
+
+      <p style="text-align:center;color:#333;font-size:13px;margin-top:32px">
+        Version 2 · 2025 · Tous droits réservés JK
+      </p>
+    </section>
+
+  </div>
+</div>
+
+</body>
+</html>

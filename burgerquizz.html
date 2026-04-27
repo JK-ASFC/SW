@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Burger Quiz">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="style.css">
+  <title>Burger Quiz</title>
+</head>
+<body>
+
+<!-- Overlay mobile -->
+<div id="mobile-wall" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px">
+  <div style="font-size:64px;margin-bottom:20px">💻</div>
+  <div style="font-size:26px;font-weight:bold;color:#EDD400;letter-spacing:3px;margin-bottom:12px;font-family:sans-serif">ORDINATEUR UNIQUEMENT</div>
+  <div style="font-size:15px;color:#888;line-height:1.7;font-family:sans-serif">
+    Burger Quiz est concu pour etre anime<br>
+    sur un <strong style="color:#eee">ordinateur</strong> ou une <strong style="color:#eee">television</strong>.<br><br>
+    Connectez-vous depuis un ecran plus grand.
+  </div>
+</div>
+
+<div id="screen">
+
+  <div id="scores">
+    <img id="logo" src="img/logo.png">
+    <div id="mayo">
+      <img id="img-mayo" src="img/mayo.png">
+      <div style="position:relative;width:240px;margin:0 30px">
+        <div id="txt-mayo">00</div>
+        <img id="score-mayo" src="img/score-00.jpg">
+      </div>
+    </div>
+    <div class="spacing"></div>
+    <div id="ketchup">
+      <img id="img-ketchup" src="img/ketchup.png">
+      <div style="position:relative;width:240px;margin:0 30px">
+        <div id="txt-ketchup">00</div>
+        <img id="score-ketchup" src="img/score-00.jpg">
+      </div>
+    </div>
+    <div id="commandes">
+      R:Reset / A:Admin / W:Accueil<br>
+      Mayo M:+1 L:-1 / Ketchup K:+1 J:-1<br>
+      ← Prev / → Suiv / P:Rejouer<br>
+      1/2/3/4:Reponse &nbsp; Espace:Reveler &nbsp; 0:Reset
+    </div>
+    <div id="slide-counter"></div>
+  </div>
+
+  <div id="board">
+    <div id="video-frame">
+      <div id="video">
+        <video id="generique" autoplay playsinline></video>
+      </div>
+    </div>
+    <div id="custom-display"></div>
+    <div id="info">
+      <div id="title"></div>
+      <div id="question"></div>
+      <ul id="menus"></ul>
+      <div id="image"><img id="img" src=""></div>
+      <div id="media-extra"></div>
+      <div id="reponse"></div>
+      <div id="reponses">
+        <div class="answer-row" id="row-A"><span class="bq-letter">A</span> <span id="reponseA"></span></div>
+        <div class="answer-row" id="row-B"><span class="bq-letter">B</span> <span id="reponseB"></span></div>
+        <div class="answer-row" id="row-C"><span class="bq-letter">C</span> <span id="reponseC"></span></div>
+        <div class="answer-row" id="row-D"><span class="bq-letter">D</span> <span id="reponseD"></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- Overlay Burger de la Mort -->
+<div id="bdm-overlay">
+  <button class="bdm-exit" onclick="exitBDM()">✕ Quitter</button>
+
+  <!-- Vue questions -->
+  <div id="bdm-q-view">
+    <div class="bdm-title-overlay">BURGER DE LA MORT</div>
+    <div class="bdm-counter" id="bdm-counter">1 / 10</div>
+    <div class="bdm-q-text" id="bdm-q-text"></div>
+    <div class="bdm-controls">
+      <button onclick="bdmPrev()">&#9664; Préc.</button>
+      <button onclick="bdmNext()">Suiv. &#9654;</button>
+    </div>
+    <div class="bdm-hint">← → naviguer &nbsp;|&nbsp; E : quitter</div>
+  </div>
+
+  <!-- Vue récapitulatif -->
+  <div id="bdm-recap">
+    <div class="bdm-recap-title">RÉCAPITULATIF</div>
+    <div id="bdm-recap-list" class="bdm-recap-list"></div>
+    <div class="bdm-recap-actions">
+      <button class="bdm-recap-back" onclick="bdmRecapBack()">&#9664; Retour</button>
+      <button class="bdm-btn-success" onclick="bdmSuccess()">&#127881; RÉUSSI !</button>
+      <button class="bdm-btn-fail"    onclick="bdmFail()">&#10007; ÉCHOUÉ</button>
+    </div>
+    <div class="bdm-hint" style="position:static;margin-top:16px">← : retour aux questions</div>
+  </div>
+</div>
+
+<!-- Overlay Victoire BDM -->
+<div id="bdm-win-overlay">
+  <div class="bdm-win-trophy">&#127942;</div>
+  <div class="bdm-win-title">FÉLICITATIONS !</div>
+  <div class="bdm-win-sub">Le Burger de la Mort est réussi !</div>
+  <div id="bdm-win-cadeau-content"></div>
+  <div class="bdm-win-actions">
+    <button class="bdm-win-btn-bdm" onclick="bdmWinRetourBDM()">&#127919; Autre équipe</button>
+    <button class="bdm-win-btn-gen" onclick="bdmWinGenerique()">&#127916; Générique de fin</button>
+    <button class="bdm-win-btn-close" onclick="exitBDMWin()">Terminer &#10005;</button>
+  </div>
+</div>
+
+<!-- Écran de fin -->
+<div id="goodbye-overlay" onclick="exitGoodbye()">
+  <div class="goodbye-title">MERCI À TOUS</div>
+  <div class="goodbye-sub">pour votre participation</div>
+  <div class="goodbye-night">BONNE NUIT !</div>
+  <div class="goodbye-hint">Cliquer ou appuyer sur une touche pour quitter</div>
+</div>
+
+<!-- Générique de fin + Retour au calme -->
+<div id="bdm-generique-overlay">
+  <video id="generique-fin-vid" autoplay playsinline></video>
+  <div id="bdm-retour-calme">
+    <div class="retour-calme-title" id="retour-calme-title">FIN</div>
+    <div class="retour-calme-msg"   id="retour-calme-msg"></div>
+
+    <!-- Sonomètre -->
+    <div id="sono-section">
+      <div id="sono-db">-- dB</div>
+      <div id="sono-status"></div>
+      <div style="position:relative;width:100%;max-width:720px">
+        <canvas id="sono-canvas" width="720" height="48"></canvas>
+        <div id="sono-needle"></div>
+      </div>
+      <div id="sono-scale">
+        <span>0</span><span>20</span><span style="color:#EDD400;font-weight:bold">40</span><span>60</span><span>80+</span>
+      </div>
+      <button id="sono-btn" class="sono-btn" onclick="toggleSonometer()">&#127908; Activer le micro</button>
+    </div>
+
+    <div class="retour-calme-hint">&#8594; ou Espace : quitter</div>
+    <button class="retour-calme-close" onclick="exitBDMGenerique()">Terminer &#10005;</button>
+  </div>
+</div>
+
+<!-- Overlay Échec BDM — choisir autre liste -->
+<div id="bdm-fail-overlay">
+  <div class="bdm-fail-title">RATÉ...</div>
+  <div class="bdm-fail-sub">Choisissez la liste pour l'autre équipe :</div>
+  <div id="bdm-fail-lists"></div>
+  <button class="bdm-fail-close" onclick="document.getElementById('bdm-fail-overlay').style.display='none'">Annuler</button>
+</div>
+
+<script src="db.js"></script>
+<script src="fonctions.js"></script>
+<script>
+  // Détection mobile
+  (function() {
+    var isMobile = window.innerWidth < 900 ||
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) document.getElementById('mobile-wall').style.display = 'flex';
+  })();
+
+  // Firefox + file:// = donnees non partagees entre pages
+  (function() {
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    var isFile    = location.protocol === 'file:';
+    if (!isFirefox || !isFile) return;
+    var b = document.createElement('div');
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9998;background:#1a0000;border-bottom:3px solid #CC0000;padding:14px 20px;font-family:Arial,sans-serif;font-size:13px;color:#ddd;display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+    b.innerHTML = '<span style="color:#CC0000;font-weight:bold;font-size:15px">&#9888; Firefox + fichier local</span>'
+      + '<span style="flex:1">Les donnees ne sont pas partagees entre les pages en <code style="color:#EDD400">file://</code>. '
+      + 'Lancez <strong>Lancer_BurgerQuiz.bat</strong> pour utiliser le serveur local '
+      + '(ou Firefox : <code style="color:#EDD400">about:config</code> &rarr; '
+      + '<code style="color:#EDD400">security.fileuri.strict_origin_policy</code> &rarr; <strong>false</strong>).</span>'
+      + '<button onclick="this.parentNode.remove()" style="background:#333;border:none;color:#aaa;padding:6px 12px;border-radius:4px;cursor:pointer">&#10005;</button>';
+    document.body.appendChild(b);
+  })();
+</script>
+</body>
+</html>

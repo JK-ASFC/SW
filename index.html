@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burger Quiz</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo { height: 90px; margin-bottom: 28px; }
+    .title {
+      font-size: 48px;
+      letter-spacing: 10px;
+      color: #EDD400;
+      font-weight: bold;
+      text-align: center;
+    }
+    .subtitle {
+      color: #333;
+      font-size: 12px;
+      letter-spacing: 4px;
+      margin-top: 6px;
+      margin-bottom: 52px;
+      text-transform: uppercase;
+    }
+
+    .menu { display: flex; gap: 24px; }
+
+    .big-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 220px;
+      height: 180px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      transition: transform .15s, opacity .15s;
+    }
+    .big-btn:hover { transform: scale(1.04); opacity: .92; }
+    .big-btn:active { transform: scale(.98); }
+
+    .btn-icon { font-size: 52px; line-height: 1; }
+    .btn-label { font-size: 16px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; }
+
+    .admin-btn  { background: #1e1e1e; border: 2px solid #333; color: #aaa; }
+    .admin-btn:hover { border-color: #555; color: #eee; }
+    .quiz-btn   { background: #EDD400; color: #111; }
+    .guide-btn  { background: #1e1e1e; border: 2px solid #1a3a1a; color: #4a9; }
+    .guide-btn:hover { border-color: #4a9; color: #5cb; }
+
+    .credit-footer {
+      position: fixed;
+      bottom: 16px;
+      right: 20px;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #222;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* Overlay choix de liste */
+    #list-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.88);
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .list-box {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .list-box h2 {
+      color: #EDD400;
+      font-size: 20px;
+      letter-spacing: 3px;
+      margin-bottom: 6px;
+    }
+    .list-box p { color: #555; font-size: 13px; margin-bottom: 24px; }
+
+    .list-item {
+      display: block;
+      width: 100%;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      background: #222;
+      border: 2px solid #333;
+      border-radius: 10px;
+      color: #eee;
+      font-size: 16px;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .list-item:hover { border-color: #EDD400; background: #2a2a00; color: #EDD400; }
+
+    .close-overlay {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: none;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #555;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color .15s, border-color .15s;
+    }
+    .close-overlay:hover { color: #aaa; border-color: #555; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* ── Overlay mobile ── */
+    #mobile-wall {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+    }
+    #mobile-wall .mw-icon  { font-size: 64px; margin-bottom: 20px; }
+    #mobile-wall .mw-title { font-size: 26px; font-weight: bold; color: #EDD400; letter-spacing: 3px; margin-bottom: 12px; }
+    #mobile-wall .mw-sub   { font-size: 15px; color: #888; line-height: 1.7; }
+    @media (max-width: 900px) {
+      #mobile-wall { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay mobile -->
+  <div id="mobile-wall">
+    <div class="mw-icon">💻</div>
+    <div class="mw-title">ORDINATEUR UNIQUEMENT</div>
+    <div class="mw-sub">
+      Burger Quiz est conçu pour être animé<br>
+      sur un <strong style="color:#eee">ordinateur</strong> ou une <strong style="color:#eee">télévision</strong>.<br><br>
+      Connectez-vous depuis un écran plus grand.
+    </div>
+  </div>
+
+  <img src="img/logo.png" class="logo" onerror="this.style.display='none'">
+  <div class="title">BURGER QUIZ</div>
+  <div class="subtitle">Choisissez votre destination</div>
+
+  <div class="menu">
+    <a href="admin.html" class="big-btn admin-btn">
+      <span class="btn-icon">⚙</span>
+      <span class="btn-label">Admin</span>
+    </a>
+    <button class="big-btn quiz-btn" onclick="chooseList()">
+      <span class="btn-icon">▶</span>
+      <span class="btn-label">Jouer</span>
+    </button>
+    <a href="guide.html" target="_blank" class="big-btn guide-btn">
+      <span class="btn-icon">📖</span>
+      <span class="btn-label">Guide</span>
+    </a>
+  </div>
+
+  <div class="credit-footer">JK</div>
+
+  <!-- Overlay sélection de liste -->
+  <div id="list-overlay">
+    <div class="list-box">
+      <h2>🍔 BURGER QUIZ</h2>
+      <p>Choisissez la liste de questions a jouer</p>
+      <div id="lists-content"></div>
+      <button class="close-overlay" onclick="document.getElementById('list-overlay').style.display='none'">Annuler</button>
+    </div>
+  </div>
+
+  <script>
+    function getLists() {
+      try { return JSON.parse(localStorage.bq_qlists || '[]'); } catch(_) { return []; }
+    }
+
+    function chooseList() {
+      const lists = getLists().filter(l => l.name && l.name.trim());
+      const content = document.getElementById('lists-content');
+      content.innerHTML = '';
+
+      if (!lists.length) {
+        content.innerHTML = '<p style="color:#CC0000;text-align:center;padding:20px 0">Aucune liste disponible.<br>Creez-en une dans l\'administration.</p>';
+        document.getElementById('list-overlay').style.display = 'flex';
+        return;
+      }
+
+      lists.forEach(l => {
+        const btn = document.createElement('button');
+        btn.className   = 'list-item';
+        btn.textContent = l.name;
+        btn.onclick     = () => { window.location.href = 'burgerquizz.html?list=' + l.id; };
+        content.appendChild(btn);
+      });
+
+      document.getElementById('list-overlay').style.display = 'flex';
+    }
+
+    // Fermer l'overlay en cliquant sur le fond
+    document.getElementById('list-overlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+    });
+
+    // Détection mobile
+    (function() {
+      var isMobile = window.innerWidth < 900 ||
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) document.getElementById('mobile-wall').style.display = 'flex';
+    })();
+
+    // Détection Firefox + file:// → bannière d'avertissement
+    (function() {
+      var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+      var isFile    = location.protocol === 'file:';
+      if (isFirefox && isFile) {
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#1a0a00;border-top:3px solid #CC0000;padding:14px 20px;font-family:Arial,sans-serif;font-size:13px;color:#ddd;display:flex;align-items:center;gap:16px;flex-wrap:wrap';
+        b.innerHTML = '<span style="color:#CC0000;font-weight:bold;font-size:15px">⚠ Firefox + fichier local</span>'
+          + '<span style="flex:1">Les données ne sont pas partagées entre les pages en protocole <code style="color:#EDD400">file://</code>. '
+          + 'Solution : double-cliquez sur <strong>Lancer_BurgerQuiz.bat</strong> pour utiliser le serveur local, '
+          + 'ou dans Firefox allez dans <code style="color:#EDD400">about:config</code> → '
+          + '<code style="color:#EDD400">security.fileuri.strict_origin_policy</code> → mettre à <strong>false</strong>.</span>'
+          + '<button onclick="this.parentNode.remove()" style="background:#333;border:none;color:#aaa;padding:6px 12px;border-radius:4px;cursor:pointer">✕</button>';
+        document.body.appendChild(b);
+      }
+    })();
+  </script>
+
+</body>
+</html>

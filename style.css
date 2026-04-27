@@ -1,0 +1,893 @@
+@font-face {
+  font-family: "BQ";
+  src: url("horse.woff2") format("woff2"), url("horse.woff") format("woff");
+}
+@font-face {
+  font-family: "AV";
+  src: url("Avenir-Black.ttf") format("truetype");
+}
+
+html { background: #0a090a; }
+
+#screen {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  display: flex;
+}
+
+/* ─── Panneau scores ─────────────────────────────────────────────────── */
+#scores {
+  background: black;
+  width: 300px;
+  flex-shrink: 0;
+  height: 100%;
+  border-right: solid 1px white;
+  text-align: center;
+  overflow: hidden;
+}
+#scores #logo         { margin: 48px; width: 150px; height: auto; }
+#scores #img-mayo,
+#scores #img-ketchup  { height: 48px; width: auto; display: block; margin: 0 auto 4px; }
+#scores #score-mayo,
+#scores #score-ketchup { width: 240px; height: auto; }
+
+#txt-mayo {
+  position: absolute;
+  right: 20px; top: 20px;
+  font-family: 'BQ';
+  font-size: 50px;
+  color: #EDD400;
+}
+#txt-ketchup {
+  position: absolute;
+  right: 20px; top: 20px;
+  font-family: 'BQ';
+  font-size: 50px;
+  color: #CC0000;
+}
+
+#commandes {
+  color: #444;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 16px;
+  padding: 0 8px;
+}
+#slide-counter {
+  color: #555;
+  font-size: 12px;
+  margin-top: 6px;
+  font-family: monospace;
+}
+
+/* ─── Board ──────────────────────────────────────────────────────────── */
+#board {
+  flex: 1;
+  position: relative;
+  background: white;
+  margin: 8px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#info {
+  font-family: "AV";
+  padding: 20px;
+  font-size: 45px;
+}
+#title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: "BQ";
+  font-size: 90px;
+}
+#question {
+  font-weight: bold;
+  margin: 80px 150px;
+  text-align: center;
+  font-family: "AV";
+  font-size: 45px;
+}
+#reponse {
+  text-align: center;
+  margin: 60px 100px;
+  font-size: 50px;
+  font-family: "AV";
+}
+#image {
+  text-align: center;
+  margin: 20px 250px;
+}
+#img {
+  max-height: 55vh;
+  max-width: 100%;
+  width: auto;
+  border-radius: 12px;
+}
+
+/* Nuggets answers */
+#reponses {
+  margin: 20px 80px;
+  font-size: 40px;
+  font-family: "AV";
+  line-height: 1.7;
+}
+
+/* Compact mode: quand un media est present avec des reponses */
+#info.has-media #question {
+  margin: 24px 80px;
+  font-size: 38px;
+}
+#info.has-media #reponses {
+  margin: 6px 80px;
+  font-size: 34px;
+  line-height: 1.5;
+}
+#info.has-media #reponse {
+  margin: 16px 80px;
+  font-size: 40px;
+}
+#info.has-media #media-extra {
+  margin: 0 80px 8px;
+}
+#media-extra img, #media-extra video {
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+#info.has-media #media-extra img,
+#info.has-media #media-extra video {
+  max-height: 180px;
+}
+.bq-letter { font-family: 'BQ'; }
+
+/* Menus list */
+#menus {
+  list-style: none;
+  margin: 40px 80px;
+  font-size: 44px;
+  font-family: "AV";
+}
+#menus li { margin-bottom: 16px; }
+#menus li::before { content: '▸ '; color: #CC0000; }
+
+/* Extra media (audio/PDF) */
+#media-extra {
+  text-align: center;
+  margin: 20px 80px;
+}
+#media-extra audio { width: 80%; outline: none; }
+
+/* ─── Video frame (centré, contenu) ─────────────────────────────────── */
+#video-frame {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: #0a090a;
+  overflow: hidden;
+}
+#video {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a090a;
+}
+#video video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ─── Ecran personnalisé (candidats / cadeau / toss) ────────────────── */
+#custom-display {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Candidats */
+#screen.candidats-mode #scores { display: none; }
+#screen.candidats-mode #board  { margin: 0; border-radius: 0; background: #111; }
+.candidats-grid {
+  display: flex;
+  height: 100%;
+  gap: 20px;
+  padding: 28px;
+  align-items: stretch;
+}
+.candidats-grid.single {
+  justify-content: center;
+}
+.candidats-grid.single .cand-card {
+  max-width: 460px;
+  flex: none;
+}
+.cand-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  text-align: center;
+  gap: 10px;
+}
+.cand-photo-wrap {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 6px solid #EDD400;
+  flex-shrink: 0;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cand-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.cand-name { font-family: 'BQ'; font-size: 56px; line-height: 1; }
+.cand-age  { font-family: 'AV'; font-size: 30px; color: #666; }
+.cand-job  { font-family: 'AV'; font-size: 34px; color: #CC0000; }
+.cand-team {
+  font-family: 'BQ';
+  font-size: 22px;
+  padding: 4px 18px;
+  border-radius: 20px;
+  color: #fff;
+  letter-spacing: 2px;
+}
+.cand-team.mayo    { background: #EDD400; color: #000; }
+.cand-team.ketchup { background: #CC0000; }
+
+/* Cadeau */
+.cadeau-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+  gap: 16px;
+  background: #fff;
+}
+.cadeau-title {
+  font-family: 'BQ';
+  font-size: 90px;
+  color: #EDD400;
+  text-shadow: 0 2px 0 #b8a000;
+}
+.cadeau-media img,
+.cadeau-media video {
+  max-height: 44vh;
+  max-width: 80%;
+  border-radius: 16px;
+  object-fit: contain;
+}
+.cadeau-desc { font-family: 'AV'; font-size: 40px; color: #222; }
+
+/* Cadeau */
+#screen.cadeau-mode #scores { display: none; }
+#screen.cadeau-mode #board  { margin: 0; border-radius: 0; background: #fff; }
+
+/* TOSS */
+#screen.toss-mode #scores { display: none; }
+#screen.toss-mode #board  { margin: 0; border-radius: 0; background: #0a090a; }
+.toss-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #fff;
+  text-align: center;
+  gap: 10px;
+}
+.toss-label       { font-family: 'BQ'; font-size: 60px; color: #EDD400; letter-spacing: 6px; }
+.toss-game-name   { font-family: 'BQ'; font-size: 80px; color: #fff; }
+.toss-instructions{ font-family: 'AV'; font-size: 42px; margin: 20px 80px; line-height: 1.4; }
+.toss-hint        { color: #333; font-size: 18px; font-family: sans-serif; letter-spacing: 2px; margin-top: 20px; }
+
+/* ─── Réponses avec highlighting ─────────────────────────────────────── */
+.answer-row {
+  padding: 10px 24px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 3px solid transparent;
+  transition: background .35s, border-color .35s, box-shadow .35s;
+}
+.answer-row.answer-selected {
+  background: rgba(255, 200, 0, 0.15);
+  border-color: #EDD400;
+}
+.answer-row.answer-correct {
+  background: rgba(0, 200, 80, 0.2);
+  border-color: #00cc50;
+  box-shadow: 0 0 28px rgba(0, 220, 80, 0.45);
+}
+.answer-row.answer-wrong {
+  background: rgba(200, 0, 0, 0.15);
+  border-color: #CC0000;
+  box-shadow: 0 0 20px rgba(200, 0, 0, 0.4);
+}
+
+/* Sel ou Poivre / Menu — réponse révélée */
+#reponse.answer-correct {
+  color: #00cc50;
+  text-shadow: 0 0 24px rgba(0, 220, 80, 0.6);
+  transition: color .35s, text-shadow .35s;
+}
+#reponse.sp-revealed {
+  color: #00cc50;
+  text-shadow: 0 0 30px rgba(0, 220, 80, 0.9), 0 0 60px rgba(0, 220, 80, 0.5);
+  transition: color .4s, text-shadow .4s;
+}
+#sp-indicator {
+  text-align: center;
+  font-family: 'BQ', sans-serif;
+  font-size: 64px;
+  margin-top: 16px;
+}
+
+/* ─── Misc ───────────────────────────────────────────────────────────── */
+.spacing { height: 20px; }
+
+/* ─── Overlay Burger de la Mort ─────────────────────────────────────── */
+#bdm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0a090a;
+  z-index: 400;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.bdm-title-overlay {
+  font-family: 'BQ', sans-serif;
+  font-size: 96px;
+  color: #CC0000;
+  text-align: center;
+  animation: bdm-pulse 2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+.bdm-counter {
+  font-family: 'AV', sans-serif;
+  font-size: 26px;
+  color: #555;
+  margin-bottom: 50px;
+  letter-spacing: 4px;
+}
+.bdm-q-text {
+  font-family: 'AV', sans-serif;
+  font-size: 52px;
+  color: #ffffff;
+  text-align: center;
+  max-width: 1300px;
+  line-height: 1.35;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bdm-controls {
+  display: flex;
+  gap: 20px;
+  margin-top: 50px;
+}
+.bdm-controls button {
+  background: #1a1a1a;
+  border: 2px solid #CC0000;
+  color: #fff;
+  padding: 12px 36px;
+  border-radius: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  font-family: 'AV', sans-serif;
+  transition: background .15s;
+}
+.bdm-controls button:hover { background: #CC0000; }
+.bdm-exit {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: none;
+  border: 1px solid #333;
+  color: #444;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: sans-serif;
+  transition: all .15s;
+}
+.bdm-exit:hover { color: #CC0000; border-color: #CC0000; }
+.bdm-hint {
+  position: absolute;
+  bottom: 20px;
+  color: #333;
+  font-size: 13px;
+  font-family: sans-serif;
+  letter-spacing: 2px;
+}
+
+/* ─── Mode Burger de la Mort (plein écran, scores cachés) ───────────── */
+#screen.bdm-mode #scores  { display: none; }
+#screen.bdm-mode #board   {
+  margin: 0;
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a090a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#screen.bdm-mode #info    { width: 100%; }
+#screen.bdm-mode #title   {
+  color: #CC0000;
+  font-size: 110px;
+  text-shadow: 0 0 40px #CC0000, 0 0 80px #800000;
+  animation: bdm-pulse 2s ease-in-out infinite;
+}
+#screen.bdm-mode #question {
+  color: #ffffff;
+  margin: 60px 200px;
+  font-size: 50px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.8);
+}
+
+/* ─── Menu Hub ───────────────────────────────────────────────────────── */
+#screen.menu-mode #board  { margin: 20px; border-radius: 50px; background: #fff; }
+
+.menu-hub {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 32px; padding: 40px; background: #fff;
+}
+.menu-hub-title { font-family: 'BQ'; font-size: 90px; color: #000; }
+.menu-btns { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.menu-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; min-width: 220px; padding: 24px 32px;
+  background: #f5f5f5; border: 3px solid #ddd; border-radius: 16px;
+  cursor: pointer; font-family: 'AV'; transition: all .15s; text-align: center;
+}
+.menu-btn:hover:not(.done) { border-color: #CC0000; background: #fff0f0; }
+.menu-btn.done { opacity: .4; cursor: default; }
+.menu-btn-num   { font-family: 'BQ'; font-size: 52px; color: #CC0000; line-height: 1; }
+.menu-btn-name  { font-size: 30px; color: #111; font-weight: bold; }
+.menu-btn-count { font-size: 16px; color: #aaa; }
+.menu-btn-check { font-size: 28px; color: #00cc50; }
+.menu-hub-hint  { color: #bbb; font-size: 14px; letter-spacing: 2px; font-family: sans-serif; }
+
+/* ─── Menu Questions ─────────────────────────────────────────────────── */
+.menu-q-content {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 28px; padding: 48px 80px;
+  background: #fff; text-align: center;
+}
+.menu-q-header  { display: flex; align-items: baseline; gap: 20px; }
+.menu-q-title   { font-family: 'BQ'; font-size: 60px; color: #CC0000; }
+.menu-q-progress{ font-family: 'AV'; font-size: 24px; color: #aaa; }
+.menu-q-text    { font-family: 'AV'; font-size: 46px; color: #111; line-height: 1.3; max-width: 900px; }
+.menu-q-answer  {
+  font-family: 'AV'; font-size: 48px;
+  padding: 12px 48px; border-radius: 12px;
+  border: 3px solid #eee; color: transparent;
+  transition: color .3s, border-color .3s;
+  user-select: none;
+}
+.menu-q-answer.revealed { color: #CC0000; border-color: #CC0000; }
+.menu-q-hint {
+  position: absolute; bottom: 20px;
+  color: #ccc; font-size: 13px; letter-spacing: 2px; font-family: sans-serif;
+}
+
+@keyframes bdm-pulse {
+  0%, 100% { text-shadow: 0 0 40px #CC0000, 0 0 80px #800000; }
+  50%       { text-shadow: 0 0 80px #FF0000, 0 0 140px #CC0000; }
+}
+
+/* ─── BDM — vue questions / récap (wrapper) ──────────────────────────── */
+#bdm-q-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ─── BDM Récapitulatif ──────────────────────────────────────────────── */
+#bdm-recap {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+}
+.bdm-recap-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 68px;
+  color: #CC0000;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+.bdm-recap-list {
+  width: 100%;
+  overflow-y: auto;
+  margin-bottom: 24px;
+  max-height: 52vh;
+}
+.bdm-recap-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #1e1e1e;
+  text-align: left;
+}
+.bdm-recap-num {
+  font-family: 'BQ', sans-serif;
+  font-size: 34px;
+  color: #CC0000;
+  min-width: 44px;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+.bdm-recap-q {
+  font-family: 'AV', sans-serif;
+  font-size: 26px;
+  color: #ddd;
+  line-height: 1.35;
+}
+.bdm-recap-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.bdm-recap-actions button {
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 22px;
+  font-family: 'AV', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: opacity .15s, transform .1s;
+}
+.bdm-recap-actions button:hover { opacity: .85; transform: scale(1.03); }
+.bdm-recap-back  { background: #1a1a1a; border: 2px solid #444 !important; color: #aaa; }
+.bdm-btn-success { background: #059669; color: #fff; }
+.bdm-btn-fail    { background: #CC0000; color: #fff; }
+
+/* ─── BDM Victoire overlay ───────────────────────────────────────────── */
+#bdm-win-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.92);
+  z-index: 600;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding: 28px 40px;
+  overflow-y: auto;
+  gap: 6px;
+}
+.bdm-win-trophy { font-size: 80px; line-height: 1; }
+.bdm-win-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 96px;
+  color: #EDD400;
+  animation: bdm-pulse-gold 2s ease-in-out infinite;
+}
+.bdm-win-sub {
+  font-family: 'AV', sans-serif;
+  font-size: 32px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+/* Contenu cadeau chargé dynamiquement */
+#bdm-win-cadeau-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.bdm-win-cadeau-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 68px;
+  color: #EDD400;
+  letter-spacing: 4px;
+}
+.bdm-win-cadeau-desc {
+  font-family: 'AV', sans-serif;
+  font-size: 34px;
+  color: #fff;
+}
+.bdm-win-cadeau-media img,
+.bdm-win-cadeau-media video {
+  max-height: 28vh;
+  max-width: 80%;
+  border-radius: 14px;
+  object-fit: contain;
+}
+
+/* Boutons d'action */
+.bdm-win-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.bdm-win-actions button {
+  padding: 13px 30px;
+  border-radius: 9px;
+  font-size: 20px;
+  font-family: 'AV', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: opacity .15s, transform .1s;
+}
+.bdm-win-actions button:hover { opacity: .85; transform: scale(1.03); }
+.bdm-win-btn-bdm  { background: #CC0000; color: #fff; }
+.bdm-win-btn-gen  { background: #1a1a00; border: 2px solid #EDD400 !important; color: #EDD400; }
+.bdm-win-btn-close{ background: none; border: 1px solid #444 !important; color: #666; }
+.bdm-win-btn-close:hover { border-color: #aaa !important; color: #fff; }
+
+@keyframes bdm-pulse-gold {
+  0%, 100% { text-shadow: 0 0 40px #EDD400, 0 0 80px #b8a000; }
+  50%       { text-shadow: 0 0 80px #FFE033, 0 0 140px #EDD400; }
+}
+
+/* ─── Générique de fin ───────────────────────────────────────────────── */
+#bdm-generique-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 700;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#generique-fin-vid {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ─── Retour au calme ────────────────────────────────────────────────── */
+#bdm-retour-calme {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: #000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px;
+  gap: 16px;
+}
+.retour-calme-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 100px;
+  color: #EDD400;
+  letter-spacing: 6px;
+}
+.retour-calme-msg {
+  font-family: 'AV', sans-serif;
+  font-size: 40px;
+  color: #aaa;
+  max-width: 900px;
+  line-height: 1.4;
+}
+.retour-calme-hint {
+  color: #333;
+  font-size: 14px;
+  letter-spacing: 2px;
+  font-family: sans-serif;
+  margin-top: 8px;
+}
+.retour-calme-close {
+  background: none;
+  border: 1px solid #333;
+  color: #444;
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: sans-serif;
+  transition: all .15s;
+  margin-top: 8px;
+}
+.retour-calme-close:hover { color: #aaa; border-color: #555; }
+
+/* ─── Sonomètre ──────────────────────────────────────────────────────── */
+#sono-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 8px;
+  width: 100%;
+  max-width: 720px;
+}
+#sono-db {
+  font-family: 'BQ', sans-serif;
+  font-size: 100px;
+  line-height: 1;
+  color: #555;
+  transition: color .25s;
+  letter-spacing: 2px;
+}
+#sono-status {
+  font-family: 'AV', sans-serif;
+  font-size: 28px;
+  letter-spacing: 6px;
+  color: #555;
+  transition: color .25s;
+  min-height: 36px;
+  text-transform: uppercase;
+}
+#sono-canvas {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  height: 48px;
+  border-radius: 8px;
+  background: #1a1a1a;
+}
+#sono-scale {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 720px;
+  font-size: 12px;
+  color: #444;
+  font-family: monospace;
+  padding: 0 2px;
+  margin-top: -2px;
+}
+.sono-btn {
+  margin-top: 6px;
+  background: none;
+  border: 1px solid #333;
+  color: #555;
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: sans-serif;
+  transition: all .15s;
+}
+.sono-btn:hover  { color: #aaa; border-color: #555; }
+.sono-btn.active { border-color: #00cc50; color: #00cc50; }
+
+/* ─── BDM Échec — sélecteur de liste ────────────────────────────────── */
+#bdm-fail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.95);
+  z-index: 600;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+.bdm-fail-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 110px;
+  color: #CC0000;
+  text-shadow: 0 0 40px #CC0000;
+}
+.bdm-fail-sub {
+  font-family: 'AV', sans-serif;
+  font-size: 30px;
+  color: #aaa;
+  margin: 10px 0 24px;
+}
+.bdm-fail-list-btn {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  padding: 16px 24px;
+  margin-bottom: 10px;
+  background: #1a0000;
+  border: 2px solid #CC0000;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 22px;
+  font-family: 'AV', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s;
+}
+.bdm-fail-list-btn:hover { background: #CC0000; }
+.bdm-fail-close {
+  margin-top: 16px;
+  background: none;
+  border: 1px solid #333;
+  color: #555;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: sans-serif;
+  transition: all .15s;
+}
+.bdm-fail-close:hover { color: #aaa; border-color: #555; }
+
+/* ─── Écran de fin ───────────────────────────────────────────────────── */
+#goodbye-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 800;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+.goodbye-title {
+  font-family: 'BQ', sans-serif;
+  font-size: 120px;
+  color: #EDD400;
+  text-shadow: 0 0 60px rgba(237,212,0,.4);
+  line-height: 1;
+}
+.goodbye-sub {
+  font-family: 'AV', sans-serif;
+  font-size: 36px;
+  color: #aaa;
+  margin: 16px 0 24px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+}
+.goodbye-night {
+  font-family: 'BQ', sans-serif;
+  font-size: 72px;
+  color: #fff;
+  letter-spacing: 6px;
+}
+.goodbye-hint {
+  position: absolute;
+  bottom: 32px;
+  font-family: 'AV', sans-serif;
+  font-size: 14px;
+  color: #333;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
